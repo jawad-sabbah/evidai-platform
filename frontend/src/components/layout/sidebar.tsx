@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   BrainCircuit,
   BriefcaseBusiness,
@@ -15,19 +16,22 @@ const navigation = [
   {
     label: "Dashboard",
     icon: LayoutDashboard,
-    active: true,
+    href: "/",
   },
   {
     label: "Cases",
     icon: BriefcaseBusiness,
+    href: "/cases",
   },
   {
     label: "Evidence",
     icon: FileText,
+    href: "/evidence",
   },
   {
     label: "AI Investigator",
     icon: Sparkles,
+    href: "/ai",
   },
 ];
 
@@ -60,18 +64,14 @@ export function Sidebar() {
           const Icon = item.icon;
 
           return (
-            <button
+            <Link
               key={item.label}
-              className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition ${
-                item.active
-                  ? "bg-[#E8EFEA] font-medium text-[#0F4C3A]"
-                  : "text-[#59635F] hover:bg-[#F0F1ED] hover:text-[#18201D]"
-              }`}
+              href={item.href}
+              className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-[#59635F] transition hover:bg-[#F0F1ED] hover:text-[#18201D]"
             >
               <Icon size={17} strokeWidth={1.8} />
-
               {item.label}
-            </button>
+            </Link>
           );
         })}
       </nav>

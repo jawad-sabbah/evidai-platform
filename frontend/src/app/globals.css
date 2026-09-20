@@ -50,3 +50,26 @@ button {
   background: var(--primary-soft);
   color: var(--primary);
 }
+
+.field-input {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid #e2e4df;
+  border-radius: 8px;
+  background: #ffffff;
+  padding-left: 12px;
+  padding-right: 12px;
+  font-size: 14px;
+  color: #18201d;
+  outline: none;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.field-input::placeholder {
+  color: #a0a7a3;
+}
+
+.field-input:focus {
+  border-color: #8faa9d;
+  box-shadow: 0 0 0 3px rgba(15, 76, 58, 0.07);
+}
