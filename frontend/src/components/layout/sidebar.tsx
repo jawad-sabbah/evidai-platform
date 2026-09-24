@@ -38,7 +38,7 @@ const navigation = [
 
 export function Sidebar() {
   return (
-    <aside className="flex h-screen w-[236px] flex-col border-r border-[#E6E7E2] bg-[#FBFBF8] px-4 py-5">
+    <aside className="flex h-full w-[236px] flex-col border-r border-[#E6E7E2] bg-[#FBFBF8] px-4 py-5">
       <div className="flex items-center gap-3 px-2">
         <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#0F4C3A] text-white">
           <BrainCircuit size={19} />
