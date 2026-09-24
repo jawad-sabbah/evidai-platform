@@ -32,7 +32,7 @@ const navigation = [
     label: "AI Investigator",
     icon: Sparkles,
     href: "/ai",
-  },
+  }
 ];
 
 
@@ -77,10 +77,13 @@ export function Sidebar() {
       </nav>
 
       <div className="mt-auto">
-        <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-[#59635F] transition hover:bg-[#F0F1ED]">
+        <Link 
+        type="button"
+        href="/settings"
+        className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-[#59635F] transition hover:bg-[#F0F1ED]">
           <Settings size={17} strokeWidth={1.8} />
           Settings
-        </button>
+        </Link>
 
         <div className="mt-4 border-t border-[#E6E7E2] pt-4">
           <div className="flex items-center gap-3 rounded-xl px-2 py-2">
