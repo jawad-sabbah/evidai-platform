@@ -13,13 +13,21 @@ export function AppShell({
   showTopbar = true,
 }: AppShellProps) {
   return (
-    <div className="flex min-h-screen bg-[#F7F7F3]">
-      <Sidebar />
+    <div className="min-h-screen bg-[#F7F7F3]">
+      {/* FIXED SIDEBAR */}
+      <div className="fixed left-0 top-0 z-40 h-screen w-[236px]">
+        <Sidebar />
+      </div>
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        {showTopbar && <Topbar />}
+      {/* MAIN AREA */}
+      <div className="ml-[236px] flex min-h-screen flex-col">
+        {showTopbar && (
+          <div className="sticky top-0 z-30">
+            <Topbar />
+          </div>
+        )}
 
-        <main className="min-h-0 min-w-0 flex-1 overflow-hidden">
+        <main className="min-h-0 flex-1">
           {children}
         </main>
       </div>
