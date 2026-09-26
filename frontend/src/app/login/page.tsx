@@ -2,6 +2,9 @@
 
 import Link from "next/link";
 import { FormEvent, useState } from "react";
+
+import {getInputClassName} from "@/lib/styles";
+
 import {
   ArrowRight,
   Check,
@@ -379,7 +382,7 @@ export default function LoginPage() {
                       }
                       placeholder="name@company.com"
                       autoComplete="email"
-                      className={inputClass(
+                      className={getInputClassName(
                         Boolean(errors.email),
                       )}
                     />
@@ -413,7 +416,7 @@ export default function LoginPage() {
                       }
                       placeholder="Enter your password"
                       autoComplete="current-password"
-                      className={`${inputClass(
+                      className={`${getInputClassName(
                         Boolean(errors.password),
                       )} pr-11`}
                     />
@@ -620,18 +623,4 @@ function SuccessStep({
       {children}
     </div>
   );
-}
-
-/* =========================================================
-   INPUT CLASS
-========================================================= */
-
-function inputClass(
-  error: boolean,
-) {
-  return `h-11 w-full rounded-lg border bg-white pl-10 pr-4 text-sm text-[#26312C] outline-none transition placeholder:text-[#A0A8A4] ${
-    error
-      ? "border-[#D8A29C] focus:border-[#C2685E]"
-      : "border-[#DDE2DD] focus:border-[#8FA99B] focus:ring-2 focus:ring-[#E9F0EC]"
-  }`;
 }

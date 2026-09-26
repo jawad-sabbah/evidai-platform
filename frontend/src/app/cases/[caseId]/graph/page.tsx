@@ -8,6 +8,9 @@ import {
 } from "react";
 import { useParams } from "next/navigation";
 
+import {formatLabel} from "@/lib/formatters";
+import { EntityIcon } from "@/components/entities/entity-icon";
+
 import {
   Background,
   Controls,
@@ -1570,56 +1573,6 @@ function TypeCheckbox({
   );
 }
 
-/* =========================================================
-   ENTITY ICON
-========================================================= */
-
-function EntityIcon({
-  type,
-  size = 16,
-}: {
-  type: EntityType;
-
-  size?: number;
-}) {
-  if (type === "PERSON") {
-    return (
-      <User size={size} />
-    );
-  }
-
-  if (
-    type ===
-    "ORGANIZATION"
-  ) {
-    return (
-      <Building2
-        size={size}
-      />
-    );
-  }
-
-  if (
-    type ===
-    "BANK_ACCOUNT"
-  ) {
-    return (
-      <CreditCard
-        size={size}
-      />
-    );
-  }
-
-  if (type === "EMAIL") {
-    return (
-      <Mail size={size} />
-    );
-  }
-
-  return (
-    <Network size={size} />
-  );
-}
 
 /* =========================================================
    SUPPORTING EVIDENCE ROW
@@ -1662,19 +1615,3 @@ function DetailLabel({
   );
 }
 
-/* =========================================================
-   FORMAT LABEL
-========================================================= */
-
-function formatLabel(
-  value: string,
-) {
-  return value
-    .replaceAll("_", " ")
-    .toLowerCase()
-    .replace(
-      /\b\w/g,
-      (letter) =>
-        letter.toUpperCase(),
-    );
-}

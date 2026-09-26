@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 
+import {formatLabel} from "@/lib/formatters";
+
 import {
   AlertTriangle,
   ArrowRight,
@@ -1577,22 +1579,3 @@ function QuickAction({
   );
 }
 
-/* =========================================================
-   FORMAT
-========================================================= */
-
-function formatLabel(
-  value: string,
-) {
-  return value
-    .replaceAll(
-      "_",
-      " ",
-    )
-    .toLowerCase()
-    .replace(
-      /\b\w/g,
-      (letter) =>
-        letter.toUpperCase(),
-    );
-}

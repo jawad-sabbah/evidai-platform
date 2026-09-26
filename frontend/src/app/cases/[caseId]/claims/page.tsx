@@ -4,6 +4,12 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 
+import { SectionLabel } from "@/components/ui/section-label";
+import { SummaryCard } from "@/components/ui/summary-card";
+import { DecisionCard } from "@/components/ui/decision-card";
+
+import { formatLabel } from "@/lib/formatters";
+
 import {
   Check,
   ChevronDown,
@@ -1441,7 +1447,7 @@ function ReviewClaimModal({
           </p>
 
           <div className="mt-4 grid grid-cols-2 gap-3">
-            <ClaimDecisionCard
+            <DecisionCard
               title="Supported"
               description="Evidence supports the assertion."
               selected={
@@ -1455,7 +1461,7 @@ function ReviewClaimModal({
               }
             />
 
-            <ClaimDecisionCard
+            <DecisionCard
               title="Contradicted"
               description="Evidence contradicts the assertion."
               selected={
@@ -1469,7 +1475,7 @@ function ReviewClaimModal({
               }
             />
 
-            <ClaimDecisionCard
+            <DecisionCard
               title="Disputed"
               description="Evidence is conflicting or inconclusive."
               selected={
@@ -1483,7 +1489,7 @@ function ReviewClaimModal({
               }
             />
 
-            <ClaimDecisionCard
+            <DecisionCard
               title="Verified"
               description="Investigator has independently verified the claim."
               selected={
@@ -1590,65 +1596,6 @@ function ReviewClaimModal({
 }
 
 /* =========================================================
-   CLAIM DECISION
-========================================================= */
-
-function ClaimDecisionCard({
-  title,
-  description,
-  selected,
-  onClick,
-}: {
-  title: string;
-
-  description: string;
-
-  selected: boolean;
-
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={
-        onClick
-      }
-      className={`rounded-xl border p-4 text-left transition ${
-        selected
-          ? "border-[#8FAB9D] bg-[#F1F6F3]"
-          : "border-[#E2E5E1] bg-white hover:bg-[#FAFAF7]"
-      }`}
-    >
-      <div className="flex items-center gap-2">
-        <div
-          className={`flex h-4 w-4 items-center justify-center rounded-full border ${
-            selected
-              ? "border-[#0F4C3A] bg-[#0F4C3A]"
-              : "border-[#BBC2BE]"
-          }`}
-        >
-          {selected && (
-            <div className="h-1.5 w-1.5 rounded-full bg-white" />
-          )}
-        </div>
-
-        <div className="text-sm font-semibold text-[#35413B]">
-          {
-            title
-          }
-        </div>
-      </div>
-
-      <p className="mt-2 text-xs leading-5 text-[#85908A]">
-        {
-          description
-        }
-      </p>
-    </button>
-  );
-}
-
-/* =========================================================
    CLAIM STATUS
 ========================================================= */
 
@@ -1716,96 +1663,4 @@ function EvidenceTypeBadge({
       Contradicts
     </span>
   );
-}
-
-/* =========================================================
-   SUMMARY
-========================================================= */
-
-function SummaryCard({
-  label,
-  value,
-  tone = "normal",
-}: {
-  label: string;
-
-  value: number;
-
-  tone?:
-    | "normal"
-    | "danger"
-    | "warning"
-    | "neutral";
-}) {
-  const styles = {
-    normal:
-      "text-[#18201D]",
-
-    danger:
-      "text-[#B64D42]",
-
-    warning:
-      "text-[#98752D]",
-
-    neutral:
-      "text-[#66716B]",
-  };
-
-  return (
-    <div className="rounded-xl border border-[#E4E6E2] bg-white px-5 py-4">
-      <div
-        className={`text-[26px] font-semibold tracking-[-0.03em] ${styles[tone]}`}
-      >
-        {
-          value
-        }
-      </div>
-
-      <div className="mt-1 text-xs font-medium text-[#7A8580]">
-        {
-          label
-        }
-      </div>
-    </div>
-  );
-}
-
-/* =========================================================
-   LABEL
-========================================================= */
-
-function SectionLabel({
-  label,
-}: {
-  label: string;
-}) {
-  return (
-    <div className="text-[10px] font-semibold uppercase tracking-[0.11em] text-[#8B9490]">
-      {
-        label
-      }
-    </div>
-  );
-}
-
-/* =========================================================
-   FORMAT
-========================================================= */
-
-function formatLabel(
-  value: string,
-) {
-  return value
-    .replaceAll(
-      "_",
-      " ",
-    )
-    .toLowerCase()
-    .replace(
-      /\b\w/g,
-      (
-        letter,
-      ) =>
-        letter.toUpperCase(),
-    );
 }
