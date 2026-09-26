@@ -9,6 +9,10 @@ import Link from "next/link";
 
 import { useParams } from "next/navigation";
 
+import { formatLabel } from "@/lib/formatters";
+
+import { SectionLabel } from "@/components/ui/section-label";
+
 import {
   Check,
   CheckCircle2,
@@ -2376,17 +2380,7 @@ function InfoBlock({
   );
 }
 
-function SectionLabel({
-  label,
-}: {
-  label: string;
-}) {
-  return (
-    <div className="text-[10px] font-semibold uppercase tracking-[0.11em] text-[#8B9490]">
-      {label}
-    </div>
-  );
-}
+
 
 /* =========================================================
    GENERATE SECTIONS
@@ -2700,18 +2694,3 @@ function createId() {
   return `${Date.now()}-${Math.random()}`;
 }
 
-function formatLabel(
-  value: string,
-) {
-  return value
-    .replaceAll(
-      "_",
-      " ",
-    )
-    .toLowerCase()
-    .replace(
-      /\b\w/g,
-      (letter) =>
-        letter.toUpperCase(),
-    );
-}

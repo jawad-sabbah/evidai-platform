@@ -2,6 +2,9 @@
 
 import Link from "next/link";
 import { FormEvent, useState } from "react";
+
+import {getInputClassName} from "@/lib/styles";
+
 import {
   ArrowRight,
   Check,
@@ -446,7 +449,7 @@ export default function RegisterPage() {
                       }
                       placeholder="Enter your full name"
                       autoComplete="name"
-                      className={inputClass(
+                      className={getInputClassName(
                         Boolean(
                           errors.fullName,
                         ),
@@ -483,7 +486,7 @@ export default function RegisterPage() {
                       }
                       placeholder="name@company.com"
                       autoComplete="email"
-                      className={inputClass(
+                      className={getInputClassName(
                         Boolean(
                           errors.email,
                         ),
@@ -524,7 +527,7 @@ export default function RegisterPage() {
                       }
                       placeholder="Minimum 8 characters"
                       autoComplete="new-password"
-                      className={`${inputClass(
+                      className={`${getInputClassName(
                         Boolean(
                           errors.password,
                         ),
@@ -586,7 +589,7 @@ export default function RegisterPage() {
                       }
                       placeholder="Repeat your password"
                       autoComplete="new-password"
-                      className={`${inputClass(
+                      className={`${getInputClassName(
                         Boolean(
                           errors.confirmPassword,
                         ),
@@ -814,16 +817,3 @@ function SuccessStep({
   );
 }
 
-/* =========================================================
-   INPUT CLASS
-========================================================= */
-
-function inputClass(
-  error: boolean,
-) {
-  return `h-11 w-full rounded-lg border bg-white pl-10 pr-4 text-sm text-[#26312C] outline-none transition placeholder:text-[#A0A8A4] ${
-    error
-      ? "border-[#D8A29C] focus:border-[#C2685E]"
-      : "border-[#DDE2DD] focus:border-[#8FA99B] focus:ring-2 focus:ring-[#E9F0EC]"
-  }`;
-}

@@ -15,6 +15,8 @@ import {
 import { AppShell } from "@/components/layout/app-shell";
 import { CaseWorkspaceHeader } from "@/components/cases/case-workspace-header";
 
+import { InfoItem } from "@/components/ui/info-item";
+
 const recentEvidence = [
   {
     id: "1",
@@ -282,26 +284,6 @@ function MetricCard({
             {label}
           </div>
         </div>
-      </div>
-    </div>
-  );
-}
-
-function InfoItem({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
-  return (
-    <div>
-      <div className="text-[11px] font-medium uppercase tracking-[0.08em] text-[#929A96]">
-        {label}
-      </div>
-
-      <div className="mt-1 text-sm font-medium text-[#35413B]">
-        {value}
       </div>
     </div>
   );

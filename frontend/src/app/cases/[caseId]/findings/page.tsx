@@ -4,6 +4,12 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 
+import { SectionLabel } from "@/components/ui/section-label";
+import { SummaryCard } from "@/components/ui/summary-card";
+import { SeverityBadge } from "@/components/ui/severity-badge";
+
+import { formatLabel } from "@/lib/formatters";
+
 import {
   Check,
   CheckCircle2,
@@ -1950,132 +1956,3 @@ function FindingStatusBadge({
   );
 }
 
-/* =========================================================
-   SEVERITY
-========================================================= */
-
-function SeverityBadge({
-  severity,
-}: {
-  severity:
-    FindingSeverity;
-}) {
-  const styles: Record<
-    FindingSeverity,
-    string
-  > = {
-    CRITICAL:
-      "bg-[#FBEAE8] text-[#C5564B]",
-
-    HIGH:
-      "bg-[#F8EFE1] text-[#B77527]",
-
-    MEDIUM:
-      "bg-[#F5F1E2] text-[#9A7927]",
-
-    LOW:
-      "bg-[#EDF1EE] text-[#68756E]",
-  };
-
-  return (
-    <span
-      className={`rounded-full px-2.5 py-1 text-[9px] font-semibold tracking-[0.05em] ${styles[severity]}`}
-    >
-      {
-        severity
-      }
-    </span>
-  );
-}
-
-/* =========================================================
-   SUMMARY
-========================================================= */
-
-function SummaryCard({
-  label,
-  value,
-  tone = "normal",
-}: {
-  label: string;
-
-  value: number;
-
-  tone?:
-    | "normal"
-    | "success"
-    | "warning"
-    | "danger";
-}) {
-  const styles = {
-    normal:
-      "text-[#18201D]",
-
-    success:
-      "text-[#19704F]",
-
-    warning:
-      "text-[#98752D]",
-
-    danger:
-      "text-[#B64D42]",
-  };
-
-  return (
-    <div className="rounded-xl border border-[#E4E6E2] bg-white px-5 py-4">
-      <div
-        className={`text-[26px] font-semibold tracking-[-0.03em] ${styles[tone]}`}
-      >
-        {
-          value
-        }
-      </div>
-
-      <div className="mt-1 text-xs font-medium text-[#7A8580]">
-        {
-          label
-        }
-      </div>
-    </div>
-  );
-}
-
-/* =========================================================
-   LABEL
-========================================================= */
-
-function SectionLabel({
-  label,
-}: {
-  label: string;
-}) {
-  return (
-    <div className="text-[10px] font-semibold uppercase tracking-[0.11em] text-[#8B9490]">
-      {
-        label
-      }
-    </div>
-  );
-}
-
-/* =========================================================
-   FORMAT
-========================================================= */
-
-function formatLabel(
-  value: string,
-) {
-  return value
-    .replaceAll(
-      "_",
-      " ",
-    )
-    .toLowerCase()
-    .replace(
-      /\b\w/g,
-      (
-        letter,
-      ) =>
-        letter.toUpperCase(),
-    );
-}

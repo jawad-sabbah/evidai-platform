@@ -3,6 +3,10 @@
 import {useState} from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+
+import { InfoItem } from "@/components/ui/info-item";
+import { formatLabel } from "@/lib/formatters";
+
 import {
   ShieldCheck,
   Check,
@@ -691,25 +695,6 @@ function formatReviewLabel(value: string) {
       letter.toUpperCase(),
     );
 }
-function InfoItem({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
-  return (
-    <div>
-      <div className="text-[11px] font-medium uppercase tracking-[0.08em] text-[#929A96]">
-        {label}
-      </div>
-
-      <div className="mt-1 text-sm font-medium text-[#35413B]">
-        {value}
-      </div>
-    </div>
-  );
-}
 
 function MiniMetric({
   icon,
@@ -735,13 +720,6 @@ function MiniMetric({
       </div>
     </div>
   );
-}
-
-function formatLabel(value: string) {
-  return value
-    .replaceAll("_", " ")
-    .toLowerCase()
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
 

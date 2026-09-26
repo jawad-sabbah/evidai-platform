@@ -4,6 +4,11 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 
+import { formatLabel } from "@/lib/formatters";
+import { SeverityBadge } from "@/components/ui/severity-badge";
+
+import { SectionLabel } from "@/components/ui/section-label";
+
 import {
   AlertTriangle,
   Check,
@@ -1958,44 +1963,6 @@ function FlagSeverityIcon({
 }
 
 /* =========================================================
-   SEVERITY
-========================================================= */
-
-function SeverityBadge({
-  severity,
-}: {
-  severity:
-    FlagSeverity;
-}) {
-  const styles: Record<
-    FlagSeverity,
-    string
-  > = {
-    CRITICAL:
-      "bg-[#FBEAE8] text-[#C5564B]",
-
-    HIGH:
-      "bg-[#F8EFE1] text-[#B77527]",
-
-    MEDIUM:
-      "bg-[#F5F1E2] text-[#9A7927]",
-
-    LOW:
-      "bg-[#EDF1EE] text-[#68756E]",
-  };
-
-  return (
-    <span
-      className={`rounded-full px-2.5 py-1 text-[9px] font-semibold tracking-[0.05em] ${styles[severity]}`}
-    >
-      {
-        severity
-      }
-    </span>
-  );
-}
-
-/* =========================================================
    STATUS
 ========================================================= */
 
@@ -2035,42 +2002,3 @@ function FlagStatusBadge({
   );
 }
 
-/* =========================================================
-   LABEL
-========================================================= */
-
-function SectionLabel({
-  label,
-}: {
-  label: string;
-}) {
-  return (
-    <div className="text-[10px] font-semibold uppercase tracking-[0.11em] text-[#8B9490]">
-      {
-        label
-      }
-    </div>
-  );
-}
-
-/* =========================================================
-   FORMAT
-========================================================= */
-
-function formatLabel(
-  value: string,
-) {
-  return value
-    .replaceAll(
-      "_",
-      " ",
-    )
-    .toLowerCase()
-    .replace(
-      /\b\w/g,
-      (
-        letter,
-      ) =>
-        letter.toUpperCase(),
-    );
-}

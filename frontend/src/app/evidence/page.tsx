@@ -3,6 +3,9 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
+import { SummaryCard } from "@/components/ui/summary-card";
+import { formatLabel } from "@/lib/formatters";
+
 import {
   AlertTriangle,
   Check,
@@ -871,7 +874,7 @@ export default function EvidencePage() {
                 label={
                   typeFilter ===
                   "ALL"
-                    ? "All types"
+                    ? "All types"  
                     : formatLabel(
                         typeFilter,
                       )
@@ -1318,70 +1321,6 @@ function EvidenceRow({
               : "Preparing"}
           </div>
         )}
-      </div>
-    </div>
-  );
-}
-
-/* =========================================================
-   SUMMARY CARD
-========================================================= */
-
-function SummaryCard({
-  label,
-  value,
-  helper,
-  tone = "normal",
-}: {
-  label:
-    string;
-
-  value:
-    number;
-
-  helper:
-    string;
-
-  tone?:
-    | "normal"
-    | "success"
-    | "processing"
-    | "danger";
-}) {
-  const valueStyles = {
-    normal:
-      "text-[#18201D]",
-
-    success:
-      "text-[#19704F]",
-
-    processing:
-      "text-[#55708D]",
-
-    danger:
-      "text-[#B64D42]",
-  };
-
-  return (
-    <div className="rounded-xl border border-[#E3E6E2] bg-white p-5 shadow-[0_2px_10px_rgba(28,40,34,0.025)]">
-      <div
-        className={`text-[28px] font-semibold tracking-[-0.04em] ${valueStyles[tone]}`}
-      >
-        {
-          value
-        }
-      </div>
-
-      <div className="mt-1 text-sm font-medium text-[#46534C]">
-        {
-          label
-        }
-      </div>
-
-      <div className="mt-1 text-[11px] text-[#929A96]">
-        {
-          helper
-        }
       </div>
     </div>
   );
@@ -2036,20 +1975,3 @@ function inferEvidenceType(
   return "OTHER";
 }
 
-function formatLabel(
-  value: string,
-) {
-  return value
-    .replaceAll(
-      "_",
-      " ",
-    )
-    .toLowerCase()
-    .replace(
-      /\b\w/g,
-      (
-        letter,
-      ) =>
-        letter.toUpperCase(),
-    );
-}

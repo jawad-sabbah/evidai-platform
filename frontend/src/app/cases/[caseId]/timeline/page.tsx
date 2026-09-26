@@ -4,6 +4,18 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 
+import { SectionLabel } from "@/components/ui/section-label";
+
+import {formatLabel} from "@/lib/formatters";
+
+import {
+  formatDay,
+  formatFullDate,
+  formatMonth,
+  formatShortMonth,
+} from "@/lib/date-formatters";
+
+
 import {
   Building2,
   CalendarDays,
@@ -1244,104 +1256,4 @@ function ReviewBadge({
   );
 }
 
-/* =========================================================
-   SECTION LABEL
-========================================================= */
 
-function SectionLabel({
-  label,
-}: {
-  label: string;
-}) {
-  return (
-    <div className="text-[10px] font-semibold uppercase tracking-[0.11em] text-[#8B9490]">
-      {label}
-    </div>
-  );
-}
-
-/* =========================================================
-   FORMAT HELPERS
-========================================================= */
-
-function formatLabel(
-  value: string,
-) {
-  return value
-    .replaceAll("_", " ")
-    .toLowerCase()
-    .replace(
-      /\b\w/g,
-      (letter) =>
-        letter.toUpperCase(),
-    );
-}
-
-function parseDate(
-  value: string,
-) {
-  const [
-    year,
-    month,
-    day,
-  ] = value
-    .split("-")
-    .map(Number);
-
-  return new Date(
-    year,
-    month - 1,
-    day,
-  );
-}
-
-function formatMonth(
-  value: string,
-) {
-  return parseDate(
-    value,
-  ).toLocaleDateString(
-    "en-US",
-    {
-      month: "long",
-      year: "numeric",
-    },
-  );
-}
-
-function formatDay(
-  value: string,
-) {
-  return parseDate(value)
-    .getDate()
-    .toString()
-    .padStart(2, "0");
-}
-
-function formatShortMonth(
-  value: string,
-) {
-  return parseDate(value)
-    .toLocaleDateString(
-      "en-US",
-      {
-        month: "short",
-      },
-    )
-    .toUpperCase();
-}
-
-function formatFullDate(
-  value: string,
-) {
-  return parseDate(
-    value,
-  ).toLocaleDateString(
-    "en-US",
-    {
-      month: "long",
-      day: "numeric",
-      year: "numeric",
-    },
-  );
-}

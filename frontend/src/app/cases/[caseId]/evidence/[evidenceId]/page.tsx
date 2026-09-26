@@ -18,6 +18,8 @@ import {
 
 import { AppShell } from "@/components/layout/app-shell";
 
+import { EntityIcon } from "@/components/entities/entity-icon";
+
 const pages = [
   { id: 1, label: "Page 1" },
   { id: 2, label: "Page 2" },
@@ -320,25 +322,3 @@ function EntityMention({
   );
 }
 
-function EntityIcon({
-  type,
-}: {
-  type: string;
-}) {
-  switch (type) {
-    case "PERSON":
-      return <User size={14} />;
-
-    case "ORGANIZATION":
-      return <Building2 size={14} />;
-
-    case "BANK_ACCOUNT":
-      return <CreditCard size={14} />;
-
-    case "LOCATION":
-      return <MapPin size={14} />;
-
-    default:
-      return <FileText size={14} />;
-  }
-}
