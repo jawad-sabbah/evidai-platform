@@ -22,6 +22,10 @@ export function EvidenceStatusBadge({
 
     FAILED:
       "bg-[#F7E9E7] text-[#B64D42]",
+    
+    UPLOADED:
+      "bg-[#EEF1EE] text-[#66716B]",
+  
   };
 
   return (

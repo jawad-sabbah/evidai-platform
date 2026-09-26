@@ -12,7 +12,10 @@ export type EvidenceStatus =
   | "READY"
   | "PROCESSING"
   | "FAILED"
-  | "QUEUED";
+  | "QUEUED"
+  | "UPLOADED"
+  ;
+  
 
 type RecentCase = {
   id: string;
