@@ -6,48 +6,7 @@ import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { AppShell } from "@/components/layout/app-shell";
 
-const cases = [
-  {
-    id: "1",
-    caseNumber: "INV-2026-001",
-    title: "Suspicious Payments Investigation",
-    description: "Review of unusual financial transfers and related parties.",
-    status: "OPEN",
-    evidenceCount: 146,
-    memberCount: 4,
-    updatedAt: "2 hours ago",
-  },
-  {
-    id: "2",
-    caseNumber: "INV-2026-002",
-    title: "Vendor Fraud Review",
-    description: "Assessment of procurement irregularities and vendor activity.",
-    status: "IN_REVIEW",
-    evidenceCount: 87,
-    memberCount: 3,
-    updatedAt: "5 hours ago",
-  },
-  {
-    id: "3",
-    caseNumber: "INV-2026-003",
-    title: "Offshore Transfers",
-    description: "Investigation into cross-border transfers and linked entities.",
-    status: "OPEN",
-    evidenceCount: 210,
-    memberCount: 5,
-    updatedAt: "1 day ago",
-  },
-  {
-    id: "4",
-    caseNumber: "INV-2026-004",
-    title: "Expense Investigation",
-    description: "Internal review of employee expense activity.",
-    status: "CLOSED",
-    evidenceCount: 34,
-    memberCount: 2,
-    updatedAt: "3 days ago",
-  },
-];
+import { cases } from "@/data/mocks/cases";
 
 export default function CasesPage() {
 

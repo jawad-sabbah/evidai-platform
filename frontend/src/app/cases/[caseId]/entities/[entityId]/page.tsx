@@ -25,71 +25,12 @@ import {
 import { AppShell } from "@/components/layout/app-shell";
 import { CaseWorkspaceHeader } from "@/components/cases/case-workspace-header";
 
-const mentions = [
-  {
-    id: "m1",
-    file: "company_registry.pdf",
-    page: 7,
-    text: "John Smith was appointed director of ACME Ltd.",
-  },
-  {
-    id: "m2",
-    file: "email_332.pdf",
-    page: 2,
-    text: "John requested an updated payment schedule.",
-  },
-  {
-    id: "m3",
-    file: "bank_statement.pdf",
-    page: 12,
-    text: "Transfer reference includes John Smith.",
-  },
-  {
-    id: "m4",
-    file: "interview.pdf",
-    page: 3,
-    text: "John denied being directly involved with ACME.",
-  },
-];
+import {
+  relationships,
+  mentions,
+  events,
+} from "@/data/mocks/entities";
 
-const relationships = [
-  {
-    id: "r1",
-    type: "DIRECTOR_OF",
-    target: "ACME Ltd",
-    confidence: 0.96,
-  },
-  {
-    id: "r2",
-    type: "CONTROLS",
-    target: "Account 3281",
-    confidence: 0.92,
-  },
-  {
-    id: "r3",
-    type: "EMAILED",
-    target: "Sarah Miller",
-    confidence: 0.89,
-  },
-];
-
-const events = [
-  {
-    id: "e1",
-    date: "Mar 12, 2026",
-    title: "$100,000 transfer",
-  },
-  {
-    id: "e2",
-    date: "Mar 14, 2026",
-    title: "Email communication",
-  },
-  {
-    id: "e3",
-    date: "Mar 18, 2026",
-    title: "Company registry updated",
-  },
-];
 
 export default function EntityDetailsPage() {
   const { caseId, entityId } = useParams<{

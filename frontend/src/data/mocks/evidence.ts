@@ -336,3 +336,36 @@ export const typeOptions: Array<
   "ARCHIVE",
   "OTHER",
 ];
+
+
+
+export const recentEvidence = [
+  {
+    id: "1",
+    name: "bank_statement.pdf",
+    type: "PDF",
+    updatedAt: "2h ago",
+  },
+  {
+    id: "2",
+    name: "offshore_contract.docx",
+    type: "DOCX",
+    updatedAt: "5h ago",
+  },
+  {
+    id: "3",
+    name: "transactions.csv",
+    type: "CSV",
+    updatedAt: "1d ago",
+  },
+  {
+    id: "4",
+    name: "email_thread.eml",
+    type: "EML",
+    updatedAt: "2d ago",
+  },
+];
+
+
+
+

@@ -16,7 +16,6 @@ import {
   CreditCard,
   Mail,
   MapPin,
-  MoreHorizontal,
   Search,
   ShieldCheck,
   User,
@@ -26,141 +25,15 @@ import {
 import { AppShell } from "@/components/layout/app-shell";
 import { CaseWorkspaceHeader } from "@/components/cases/case-workspace-header";
 
-/* =========================================================
-   TYPES
-========================================================= */
 
-type ReviewStatus =
-  | "UNREVIEWED"
-  | "CONFIRMED"
-  | "REJECTED"
-  | "MERGED";
-
-type EntityType =
-  | "PERSON"
-  | "ORGANIZATION"
-  | "BANK_ACCOUNT"
-  | "LOCATION"
-  | "EMAIL";
-
-type EntityItem = {
-  id: string;
-
-  entityType: EntityType;
-
-  canonicalName: string;
-
-  normalizedValue?: string;
-
-  confidence: number;
-
-  reviewStatus: ReviewStatus;
-
-  mentions: number;
-
-  lastSeen: string;
-
-  reviewNotes?: string;
-
-  mergedInto?: string;
-};
-
-/* =========================================================
-   MOCK DATA
-   Immediately after processing -> UNREVIEWED
-========================================================= */
-
-const initialEntities: EntityItem[] = [
-  {
-    id: "ent-001",
-    entityType: "PERSON",
-    canonicalName: "John Smith",
-    confidence: 0.98,
-    reviewStatus: "UNREVIEWED",
-    mentions: 21,
-    lastSeen: "2h ago",
-  },
-
-  {
-    id: "ent-002",
-    entityType: "ORGANIZATION",
-    canonicalName: "ACME Ltd",
-    confidence: 0.96,
-    reviewStatus: "UNREVIEWED",
-    mentions: 16,
-    lastSeen: "4h ago",
-  },
-
-  {
-    id: "ent-003",
-    entityType: "BANK_ACCOUNT",
-    canonicalName: "Account 3281",
-    normalizedValue: "LB2300013281",
-    confidence: 0.99,
-    reviewStatus: "UNREVIEWED",
-    mentions: 8,
-    lastSeen: "1d ago",
-  },
-
-  {
-    id: "ent-004",
-    entityType: "LOCATION",
-    canonicalName: "London",
-    confidence: 0.91,
-    reviewStatus: "MERGED",
-    mentions: 4,
-    lastSeen: "1d ago",
-  },
-
-  {
-    id: "ent-005",
-    entityType: "PERSON",
-    canonicalName: "Sarah Miller",
-    confidence: 0.94,
-    reviewStatus: "CONFIRMED",
-    mentions: 12,
-    lastSeen: "2d ago",
-  },
-
-  {
-    id: "ent-006",
-    entityType: "ORGANIZATION",
-    canonicalName: "Global Holdings",
-    confidence: 0.89,
-    reviewStatus: "REJECTED",
-    mentions: 6,
-    lastSeen: "2d ago",
-  },
-
-  {
-    id: "ent-007",
-    entityType: "EMAIL",
-    canonicalName: "john.smith@acme.com",
-    confidence: 0.97,
-    reviewStatus: "CONFIRMED",
-    mentions: 9,
-    lastSeen: "3d ago",
-  },
-];
-
-const entityTypes: Array<"ALL" | EntityType> = [
-  "ALL",
-  "PERSON",
-  "ORGANIZATION",
-  "BANK_ACCOUNT",
-  "LOCATION",
-  "EMAIL",
-];
-
-const reviewStatuses: Array<
-  "ALL" | ReviewStatus
-> = [
-  "ALL",
-  "UNREVIEWED",
-  "CONFIRMED",
-  "REJECTED",
-  "MERGED",
-];
+import {
+  initialEntities,
+  EntityItem,
+  EntityType,
+  ReviewStatus,
+  entityTypes,
+  reviewStatuses,
+} from "@/data/mocks/entities";
 
 /* =========================================================
    PAGE

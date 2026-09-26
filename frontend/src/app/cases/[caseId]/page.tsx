@@ -17,33 +17,7 @@ import { CaseWorkspaceHeader } from "@/components/cases/case-workspace-header";
 
 import { InfoItem } from "@/components/ui/info-item";
 
-const recentEvidence = [
-  {
-    id: "1",
-    name: "bank_statement.pdf",
-    type: "PDF",
-    updatedAt: "2h ago",
-  },
-  {
-    id: "2",
-    name: "offshore_contract.docx",
-    type: "DOCX",
-    updatedAt: "5h ago",
-  },
-  {
-    id: "3",
-    name: "transactions.csv",
-    type: "CSV",
-    updatedAt: "1d ago",
-  },
-  {
-    id: "4",
-    name: "email_thread.eml",
-    type: "EML",
-    updatedAt: "2d ago",
-  },
-];
-
+import { recentEvidence } from "@/data/mocks/evidence";
 
 export default function CaseOverviewPage() {
   return (
