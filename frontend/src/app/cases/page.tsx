@@ -131,11 +131,12 @@ const searchedCases = cases.filter((item) =>
                   item.status.toLocaleLowerCase() === statusFilter
               )
               .map((item) => (
-              <div
+              <Link
                 key={item.id}
+                href={`/cases/${item.id}`}
                 className="grid grid-cols-[2.4fr_1fr_1fr_1fr] items-center border-b border-[#ECEDE9] px-6 py-5 last:border-b-0 hover:bg-[#FCFCF9]"
               >
-                <div>
+                <div >
                   <div className="text-xs font-medium text-[#7A8580]">
                     {item.caseNumber}
                   </div>
@@ -164,7 +165,7 @@ const searchedCases = cases.filter((item) =>
                 <div className="text-sm text-[#7C8581]">
                   {item.updatedAt}
                 </div>
-              </div>
+              </Link>
             ))}
             
           </div>
