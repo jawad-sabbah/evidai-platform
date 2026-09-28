@@ -1,13 +1,12 @@
 import os
 from logging.config import fileConfig
 
-from alembic import context
 from dotenv import load_dotenv
 from sqlalchemy import engine_from_config, pool
 
-import app.models
+from alembic import context
+from app import models
 from app.db.base import Base
-
 
 ## add dotenv and db url
 load_dotenv()
@@ -32,6 +31,7 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
+_ = models
 target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
