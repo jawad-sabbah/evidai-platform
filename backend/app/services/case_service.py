@@ -3,7 +3,12 @@ from uuid import UUID
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
-from app.core.exceptions import CaseNotFoundError,ConfigurationError
+from app.core.enums import CaseStatus
+from app.core.exceptions import (
+    CaseNotFoundError,
+    ConfigurationError,
+    InvalidCaseTransitionError,
+)
 from app.models.case import Case
 from app.repositories.case_repository import CaseRepository
 from app.schemas.case import CaseCreate, CaseUpdate
@@ -45,7 +50,13 @@ class CaseService:
     ) -> Case:
         case = self.get_case(db, case_id)
 
-        update_data = payload.model_dump(exclude_unset=True)
+        update_data = payload.model_dump(exclude_unset=True,mode="json")
+        
+        if "status" in update_data:
+            self._validate_status_transition(
+                current_status=CaseStatus(case.status),
+                new_status=CaseStatus(update_data["status"]),
+            )
 
         for field, value in update_data.items():
             setattr(case, field, value)
@@ -56,6 +67,35 @@ class CaseService:
         from uuid import uuid4
 
         return f"CASE-{uuid4().hex[:8].upper()}"
+
+
+    def _validate_status_transition(
+        self,
+        current_status: CaseStatus,
+        new_status: CaseStatus,
+    ) -> None:
+        allowed_transitions = {
+            CaseStatus.OPEN: {
+                CaseStatus.IN_REVIEW,
+                CaseStatus.CLOSED,
+            },
+            CaseStatus.IN_REVIEW: {
+                CaseStatus.OPEN,
+                CaseStatus.CLOSED,
+            },
+            CaseStatus.CLOSED: {
+                CaseStatus.ARCHIVED,
+            },
+            CaseStatus.ARCHIVED: set(),
+        }
+
+        if new_status == current_status:
+            return
+
+        if new_status not in allowed_transitions[current_status]:
+            raise InvalidCaseTransitionError(
+                f"Cannot change case from {current_status} to {new_status}"
+            )
 
 
 case_service = CaseService(
