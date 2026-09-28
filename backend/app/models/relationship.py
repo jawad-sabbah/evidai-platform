@@ -1,7 +1,7 @@
 import uuid
 from decimal import Decimal
 
-from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Numeric, String, Text
+from sqlalchemy import CheckConstraint, DateTime,Index, ForeignKey, Numeric, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
@@ -24,6 +24,18 @@ class Relationship(Base):
         CheckConstraint(
             "source_entity_id <> target_entity_id",
             name="relationships_check",
+        ),
+        Index(
+            "idx_relationships_case",
+            "case_id",
+        ),
+        Index(
+            "idx_relationships_source",
+            "source_entity_id",
+        ),
+        Index(
+            "idx_relationships_target",
+            "target_entity_id",
         ),
     )
 
