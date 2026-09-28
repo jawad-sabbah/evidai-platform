@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import BigInteger, CheckConstraint, DateTime, ForeignKey, String, Text
+from sqlalchemy import BigInteger, CheckConstraint, DateTime,Index,ForeignKey, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
@@ -15,6 +15,18 @@ class Evidence(Base):
         CheckConstraint(
             "processing_status IN ('UPLOADED', 'QUEUED', 'PROCESSING', 'READY', 'FAILED')",
             name="evidence_processing_status_check",
+        ),
+        Index(
+            "idx_evidence_case_id",
+            "case_id",
+        ),
+        Index(
+            "idx_evidence_processing_status",
+            "processing_status",
+        ),
+        Index(
+            "idx_evidence_uploaded_by",
+            "uploaded_by",
         ),
     )
 
