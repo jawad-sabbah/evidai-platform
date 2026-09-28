@@ -1,10 +1,12 @@
 from uuid import UUID
 
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.core.enums import CaseStatus
 from app.core.exceptions import (
+    CaseConflictError,
     CaseNotFoundError,
     ConfigurationError,
     InvalidCaseTransitionError,
@@ -45,9 +47,11 @@ class CaseService:
             db.commit()
             db.refresh(case)
             return case
-        except Exception:
+        except IntegrityError as exc:
             db.rollback()
-            raise
+            raise CaseConflictError(
+                "A case with this case number already exists"
+    ) from exc
 
     def update_case(
         self,

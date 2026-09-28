@@ -8,3 +8,7 @@ class InvalidCaseTransitionError(Exception):
 
 class ConfigurationError(Exception):
     pass
+
+
+class CaseConflictError(Exception):
+    pass
