@@ -5,19 +5,22 @@ from pydantic import BaseModel, ConfigDict, Field
 
 ## Schemas define shape of data enter and leave APi 
 
+##import the class Enum for status types data
+from app.core.enums import  CaseStatus, CaseType
+
 
 ## when create case the shape of case that created should have {title,description,case_type}
 class CaseCreate(BaseModel):
     title: str = Field(min_length=1, max_length=255)
     description: str | None = None
-    case_type: str = Field(default="OTHER", max_length=50)
-
+    case_type: CaseType = CaseType.OTHER
+ 
 
 class CaseUpdate(BaseModel):
     title: str | None = Field(default=None, min_length=1, max_length=255)
     description: str | None = None
-    case_type: str | None = Field(default=None, max_length=50)
-    status: str | None = Field(default=None, max_length=30)
+    case_type: CaseType | None = None
+    status: CaseStatus | None=None
 
 
 class CaseResponse(BaseModel):
@@ -29,8 +32,8 @@ class CaseResponse(BaseModel):
     case_number: str
     title: str
     description: str | None
-    case_type: str
-    status: str
+    case_type: CaseType
+    status: CaseStatus
     created_by: UUID
     created_at: datetime
     updated_at: datetime
