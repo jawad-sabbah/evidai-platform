@@ -25,11 +25,9 @@ class CaseRepository:
 
     def create(self, db: Session, case: Case) -> Case:
         db.add(case)
-        db.commit()
-        db.refresh(case)
+        db.flush()
         return case
 
     def update(self, db: Session, case: Case) -> Case:
-        db.commit()
-        db.refresh(case)
+        db.flush()
         return case

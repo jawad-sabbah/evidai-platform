@@ -40,7 +40,14 @@ class CaseService:
             created_by=settings.dev_user_id,
         )
 
-        return self.repository.create(db, case)
+        try:
+            self.repository.create(db, case)
+            db.commit()
+            db.refresh(case)
+            return case
+        except Exception:
+            db.rollback()
+            raise
 
     def update_case(
         self,
@@ -61,7 +68,14 @@ class CaseService:
         for field, value in update_data.items():
             setattr(case, field, value)
 
-        return self.repository.update(db, case)
+        try:
+            self.repository.create(db, case)
+            db.commit()
+            db.refresh(case)
+            return case 
+        except Exception:
+            db.rollback()
+            raise    
 
     def _generate_case_number(self) -> str:
         from uuid import uuid4
