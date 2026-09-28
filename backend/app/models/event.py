@@ -2,7 +2,7 @@ import uuid
 from datetime import date, datetime, time
 from decimal import Decimal
 
-from sqlalchemy import CheckConstraint, Date, DateTime, ForeignKey, Numeric, String, Text, Time
+from sqlalchemy import CheckConstraint, Date, DateTime,Index, ForeignKey, Numeric, String, Text, Time
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
@@ -21,6 +21,15 @@ class Event(Base):
         CheckConstraint(
             "review_status IN ('UNREVIEWED', 'CONFIRMED', 'REJECTED')",
             name="events_review_status_check",
+        ),
+        Index(
+            "idx_events_case",
+            "case_id",
+        ),
+        Index(
+            "idx_events_date",
+            "case_id",
+            "event_date",
         ),
     )
 
