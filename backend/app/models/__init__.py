@@ -30,6 +30,7 @@ from app.models.report_finding import ReportFinding
 from app.models.report_section import ReportSection
 from app.models.user import User
 from app.models.user_preference import UserPreference
+from app.models.case_number_counter import CaseNumberCounter
 
 __all__ = [
     "AIMessage",
@@ -37,6 +38,7 @@ __all__ = [
     "AISession",
     "Case",
     "CaseMember",
+    "CaseNumberCounter",
     "Claim",
     "ClaimEvidence",
     "Entity",

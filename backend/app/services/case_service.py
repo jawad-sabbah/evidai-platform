@@ -1,3 +1,4 @@
+from datetime import UTC, datetime
 from uuid import UUID
 
 from sqlalchemy.exc import IntegrityError
@@ -35,7 +36,7 @@ class CaseService:
             raise ConfigurationError("DEV_USER_ID is not configured")
 
         case = Case(
-            case_number=self._generate_case_number(),
+            case_number=self._generate_case_number(db),
             title=payload.title,
             description=payload.description,
             case_type=payload.case_type,
@@ -51,7 +52,7 @@ class CaseService:
             db.rollback()
             raise CaseConflictError(
                 "A case with this case number already exists"
-    ) from exc
+            ) from exc
 
     def update_case(
         self,
@@ -61,7 +62,7 @@ class CaseService:
     ) -> Case:
         case = self.get_case(db, case_id)
 
-        update_data = payload.model_dump(exclude_unset=True,mode="json")
+        update_data = payload.model_dump(exclude_unset=True, mode="json")
         
         if "status" in update_data:
             self._validate_status_transition(
@@ -76,15 +77,25 @@ class CaseService:
             self.repository.create(db, case)
             db.commit()
             db.refresh(case)
+           
             return case 
         except Exception:
             db.rollback()
+            
             raise    
 
-    def _generate_case_number(self) -> str:
-        from uuid import uuid4
+    def _generate_case_number(
+        self,
+        db: Session,
+    ) -> str:
+        year = datetime.now(UTC).year
 
-        return f"CASE-{uuid4().hex[:8].upper()}"
+        next_number = self.repository.get_next_case_number(
+            db,
+            year,
+        )
+
+        return f"CASE-{year}-{next_number:06d}"
 
 
     def _validate_status_transition(
