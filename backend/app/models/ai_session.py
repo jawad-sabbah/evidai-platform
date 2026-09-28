@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, String
+from sqlalchemy import DateTime,Index, ForeignKey, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
@@ -11,6 +11,13 @@ from app.db.base import Base
 
 class AISession(Base):
     __tablename__ = "ai_sessions"
+
+    __table_args__ = (
+    Index(
+        "idx_ai_sessions_case",
+        "case_id",
+    ),
+)
 
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
