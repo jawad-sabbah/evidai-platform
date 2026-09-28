@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import CheckConstraint, DateTime, ForeignKey, String, Text
+from sqlalchemy import CheckConstraint, DateTime,Index,ForeignKey, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
@@ -16,6 +16,15 @@ class Finding(Base):
         CheckConstraint(
             "status IN ('DRAFT', 'VERIFIED', 'REJECTED')",
             name="findings_status_check",
+        ),
+        Index(
+            "idx_findings_case",
+            "case_id",
+        ),
+        Index(
+            "idx_findings_status",
+            "case_id",
+            "status",
         ),
     )
 
