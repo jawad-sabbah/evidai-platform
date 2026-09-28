@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from decimal import Decimal
 
-from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Numeric, String, Text
+from sqlalchemy import CheckConstraint, DateTime,Index, ForeignKey, Numeric, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
@@ -28,6 +28,15 @@ class Flag(Base):
         CheckConstraint(
             "status IN ('OPEN', 'UNDER_REVIEW', 'DISMISSED', 'VERIFIED')",
             name="flags_status_check",
+        ),
+        Index(
+            "idx_flags_case",
+            "case_id",
+        ),
+        Index(
+            "idx_flags_status",
+            "case_id",
+            "status",
         ),
     )
 
