@@ -1,7 +1,7 @@
 import uuid
 from decimal import Decimal
 
-from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Integer, Numeric, Text
+from sqlalchemy import CheckConstraint, DateTime,Index, ForeignKey, Integer, Numeric, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
@@ -16,6 +16,14 @@ class EntityMention(Base):
         CheckConstraint(
             "confidence IS NULL OR confidence BETWEEN 0 AND 1",
             name="entity_mentions_confidence_check",
+        ),
+        Index(
+        "idx_entity_mentions_entity",
+        "entity_id",
+        ),
+        Index(
+            "idx_entity_mentions_evidence",
+            "evidence_id",
         ),
     )
 
