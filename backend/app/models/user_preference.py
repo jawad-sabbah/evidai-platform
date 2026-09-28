@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, CheckConstraint, DateTime, ForeignKey, String
+from sqlalchemy import Boolean, CheckConstraint, DateTime, Index, ForeignKey, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
@@ -24,6 +24,10 @@ class UserPreference(Base):
         CheckConstraint(
             "ai_response_style IN ('CONCISE', 'BALANCED', 'DETAILED')",
             name="user_preferences_ai_response_style_check",
+        ),
+        Index(
+        "idx_user_preferences_user_id",
+        "user_id",
         ),
     )
 
