@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, ForeignKey
+from sqlalchemy import Boolean, DateTime, Index, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
@@ -11,6 +11,13 @@ from app.db.base import Base
 
 class NotificationPreference(Base):
     __tablename__ = "notification_preferences"
+
+    __table_args__ = (
+    Index(
+        "idx_notification_preferences_user_id",
+        "user_id",
+    ),
+)
 
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
