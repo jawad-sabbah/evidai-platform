@@ -1,6 +1,14 @@
 import uuid
 
-from sqlalchemy import CheckConstraint, DateTime,Index, ForeignKey, Integer, String, Text
+from sqlalchemy import (
+    CheckConstraint,
+    DateTime,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Text,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
@@ -17,8 +25,8 @@ class ProcessingJob(Base):
             name="processing_jobs_status_check",
         ),
         Index(
-    "idx_processing_jobs_evidence_id",
-    "evidence_id",
+            "idx_processing_jobs_evidence_id",
+            "evidence_id",
         ),
         Index(
             "idx_processing_jobs_status",
