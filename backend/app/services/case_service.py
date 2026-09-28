@@ -3,10 +3,10 @@ from uuid import UUID
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
+from app.core.exceptions import CaseNotFoundError,ConfigurationError
 from app.models.case import Case
 from app.repositories.case_repository import CaseRepository
 from app.schemas.case import CaseCreate, CaseUpdate
-
 
 class CaseService:
     def __init__(self, repository: CaseRepository) -> None:
@@ -19,13 +19,13 @@ class CaseService:
         case = self.repository.get_by_id(db, case_id)
 
         if case is None:
-            raise ValueError("Case not found")
+            raise CaseNotFoundError("Case not found")
 
         return case
 
     def create_case(self, db: Session, payload: CaseCreate) -> Case:
         if settings.dev_user_id is None:
-            raise RuntimeError("DEV_USER_ID is not configured")
+            raise ConfigurationError("DEV_USER_ID is not configured")
 
         case = Case(
             case_number=self._generate_case_number(),
