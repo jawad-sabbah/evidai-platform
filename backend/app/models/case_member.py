@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import CheckConstraint, DateTime, ForeignKey, UniqueConstraint, String
+from sqlalchemy import CheckConstraint, DateTime, ForeignKey,Index,UniqueConstraint, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
@@ -20,6 +20,14 @@ class CaseMember(Base):
             "case_id",
             "user_id",
             name="case_members_case_id_user_id_key",
+        ),
+        Index(
+            "idx_case_members_case_id",
+            "case_id",
+        ),
+        Index(
+            "idx_case_members_user_id",
+            "user_id",
         ),
     )
 
