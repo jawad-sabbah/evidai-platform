@@ -5,6 +5,7 @@ from app.models.ai_message_citation import AIMessageCitation
 from app.models.ai_session import AISession
 from app.models.case import Case
 from app.models.case_member import CaseMember
+from app.models.case_number_counter import CaseNumberCounter
 from app.models.claim import Claim
 from app.models.claim_evidence import ClaimEvidence
 from app.models.entity import Entity
@@ -30,7 +31,6 @@ from app.models.report_finding import ReportFinding
 from app.models.report_section import ReportSection
 from app.models.user import User
 from app.models.user_preference import UserPreference
-from app.models.case_number_counter import CaseNumberCounter
 
 __all__ = [
     "AIMessage",
