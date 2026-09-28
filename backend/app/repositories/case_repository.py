@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.models.case import Case
 from app.models.case_number_counter import CaseNumberCounter
 
+
 class CaseRepository:
     def get_all(self, db: Session) -> list[Case]:
         statement = select(Case).order_by(Case.created_at.desc())
@@ -53,5 +54,4 @@ class CaseRepository:
             .returning(CaseNumberCounter.last_number)
         )
 
-       
-        return db.scalar(statement)    
+        return db.scalar(statement)

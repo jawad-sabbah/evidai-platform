@@ -16,6 +16,7 @@ from app.models.case import Case
 from app.repositories.case_repository import CaseRepository
 from app.schemas.case import CaseCreate, CaseUpdate
 
+
 class CaseService:
     def __init__(self, repository: CaseRepository) -> None:
         self.repository = repository
@@ -63,12 +64,17 @@ class CaseService:
         case = self.get_case(db, case_id)
 
         update_data = payload.model_dump(exclude_unset=True, mode="json")
-        
+
         if "status" in update_data:
+            new_status = CaseStatus(update_data["status"])
+
             self._validate_status_transition(
                 current_status=CaseStatus(case.status),
-                new_status=CaseStatus(update_data["status"]),
+                new_status=new_status,
             )
+
+            if new_status == CaseStatus.CLOSED:
+                case.closed_at = datetime.now(UTC)
 
         for field, value in update_data.items():
             setattr(case, field, value)
@@ -77,12 +83,12 @@ class CaseService:
             self.repository.create(db, case)
             db.commit()
             db.refresh(case)
-           
-            return case 
+
+            return case
         except Exception:
             db.rollback()
-            
-            raise    
+
+            raise
 
     def _generate_case_number(
         self,
@@ -96,7 +102,6 @@ class CaseService:
         )
 
         return f"CASE-{year}-{next_number:06d}"
-
 
     def _validate_status_transition(
         self,
