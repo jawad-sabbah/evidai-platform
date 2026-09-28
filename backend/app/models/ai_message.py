@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import CheckConstraint, DateTime, ForeignKey, String, Text
+from sqlalchemy import CheckConstraint, DateTime,Index, ForeignKey, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
@@ -13,11 +13,15 @@ class AIMessage(Base):
     __tablename__ = "ai_messages"
 
     __table_args__ = (
-        CheckConstraint(
-            "role IN ('USER', 'ASSISTANT', 'SYSTEM')",
-            name="ai_messages_role_check",
-        ),
-    )
+    CheckConstraint(
+        "role IN ('USER', 'ASSISTANT', 'SYSTEM')",
+        name="ai_messages_role_check",
+    ),
+    Index(
+        "idx_ai_messages_session",
+        "session_id",
+    ),
+)
 
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
