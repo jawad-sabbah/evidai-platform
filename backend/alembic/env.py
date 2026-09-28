@@ -4,8 +4,9 @@ from dotenv import load_dotenv
 from app.db.base import Base
 
 ## Data models imports
-from app.models.case import Case
-from app.models.user import User
+from app.db.base import Base
+import app.models
+
 
 from logging.config import fileConfig
 
@@ -48,13 +49,6 @@ target_metadata = Base.metadata
 
 
 
-def include_object(object, name, type_, reflected, compare_to):
-    # Ignore database objects that do not yet have
-    # corresponding SQLAlchemy models.
-    if reflected and compare_to is None:
-        return False
-
-    return True
 
 
 def run_migrations_offline() -> None:
@@ -75,7 +69,6 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
-        include_object=include_object,
         compare_type=True,
         compare_server_default=True,
     )
@@ -101,7 +94,6 @@ def run_migrations_online() -> None:
         context.configure(
             connection=connection,
             target_metadata=target_metadata,
-            include_object=include_object,
             compare_type=True,
             compare_server_default=True,
         )
