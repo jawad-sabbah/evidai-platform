@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from decimal import Decimal
 
-from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Numeric, String, Text
+from sqlalchemy import CheckConstraint, DateTime,Index, ForeignKey, Numeric, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
@@ -21,6 +21,10 @@ class Claim(Base):
         CheckConstraint(
             "confidence IS NULL OR confidence BETWEEN 0 AND 1",
             name="claims_confidence_check",
+        ),
+        Index(
+            "idx_claims_case",
+            "case_id",
         ),
     )
 
