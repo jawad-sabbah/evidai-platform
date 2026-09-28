@@ -1,6 +1,14 @@
 import uuid
 
-from sqlalchemy import Boolean, DateTime,Index,ForeignKey, Integer, Text, UniqueConstraint
+from sqlalchemy import (
+    Boolean,
+    DateTime,
+    ForeignKey,
+    Index,
+    Integer,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
@@ -17,10 +25,10 @@ class EvidencePage(Base):
             "page_number",
             name="evidence_pages_evidence_id_page_number_key",
         ),
-         Index(
-        "idx_evidence_pages_evidence_id",
-        "evidence_id",
-    ),
+        Index(
+            "idx_evidence_pages_evidence_id",
+            "evidence_id",
+        ),
     )
 
     id: Mapped[uuid.UUID] = mapped_column(

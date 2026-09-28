@@ -1,7 +1,15 @@
 import uuid
 from decimal import Decimal
 
-from sqlalchemy import CheckConstraint, DateTime,Index, ForeignKey, Integer, Numeric, Text
+from sqlalchemy import (
+    CheckConstraint,
+    DateTime,
+    ForeignKey,
+    Index,
+    Integer,
+    Numeric,
+    Text,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
@@ -18,8 +26,8 @@ class EntityMention(Base):
             name="entity_mentions_confidence_check",
         ),
         Index(
-        "idx_entity_mentions_entity",
-        "entity_id",
+            "idx_entity_mentions_entity",
+            "entity_id",
         ),
         Index(
             "idx_entity_mentions_evidence",

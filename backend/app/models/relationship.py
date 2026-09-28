@@ -1,7 +1,15 @@
 import uuid
 from decimal import Decimal
 
-from sqlalchemy import CheckConstraint, DateTime,Index, ForeignKey, Numeric, String, Text
+from sqlalchemy import (
+    CheckConstraint,
+    DateTime,
+    ForeignKey,
+    Index,
+    Numeric,
+    String,
+    Text,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func

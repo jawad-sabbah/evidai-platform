@@ -1,25 +1,17 @@
 import os
-
-from dotenv import load_dotenv
-from app.db.base import Base
-
-## Data models imports
-from app.db.base import Base
-import app.models
-
-
 from logging.config import fileConfig
 
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
-
 from alembic import context
+from dotenv import load_dotenv
+from sqlalchemy import engine_from_config, pool
+
+import app.models
+from app.db.base import Base
 
 
 ## add dotenv and db url
 load_dotenv()
 DATABASE_URL = os.getenv("DATABASE_URL")
-
 
 
 # this is the Alembic Config object, which provides
@@ -30,7 +22,7 @@ if DATABASE_URL:
         "sqlalchemy.url",
         DATABASE_URL.replace("%", "%%"),
     )
-       
+
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
 if config.config_file_name is not None:
@@ -46,9 +38,6 @@ target_metadata = Base.metadata
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
-
-
-
 
 
 def run_migrations_offline() -> None:

@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import CheckConstraint, DateTime,Index, ForeignKey, String
+from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Index, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
@@ -18,9 +18,9 @@ class Report(Base):
             name="reports_status_check",
         ),
         Index(
-        "idx_reports_case",
-        "case_id",
-    ),
+            "idx_reports_case",
+            "case_id",
+        ),
     )
 
     id: Mapped[uuid.UUID] = mapped_column(

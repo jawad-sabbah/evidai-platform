@@ -1,7 +1,7 @@
 import uuid
 
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import DateTime, ForeignKey,Index, Integer, Text, UniqueConstraint
+from sqlalchemy import DateTime, ForeignKey, Index, Integer, Text, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
@@ -18,10 +18,10 @@ class EvidenceChunk(Base):
             "chunk_index",
             name="evidence_chunks_evidence_id_chunk_index_key",
         ),
-         Index(
-        "idx_chunks_case_id",
-        "case_id",
-       ),
+        Index(
+            "idx_chunks_case_id",
+            "case_id",
+        ),
         Index(
             "idx_chunks_evidence_id",
             "evidence_id",

@@ -1,7 +1,15 @@
 import uuid
 from decimal import Decimal
 
-from sqlalchemy import CheckConstraint, DateTime,Index,ForeignKey, Numeric, String, Text
+from sqlalchemy import (
+    CheckConstraint,
+    DateTime,
+    ForeignKey,
+    Index,
+    Numeric,
+    String,
+    Text,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
@@ -21,9 +29,9 @@ class Entity(Base):
             "review_status IN ('UNREVIEWED', 'CONFIRMED', 'REJECTED', 'MERGED')",
             name="entities_review_status_check",
         ),
-         Index(
-        "idx_entities_case_id",
-        "case_id",
+        Index(
+            "idx_entities_case_id",
+            "case_id",
         ),
         Index(
             "idx_entities_type",

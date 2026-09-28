@@ -1,6 +1,13 @@
 import uuid
 
-from sqlalchemy import CheckConstraint, DateTime, ForeignKey,Index,UniqueConstraint, String
+from sqlalchemy import (
+    CheckConstraint,
+    DateTime,
+    ForeignKey,
+    Index,
+    String,
+    UniqueConstraint,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
@@ -49,10 +56,7 @@ class CaseMember(Base):
         nullable=False,
     )
 
-    case_role: Mapped[str] = mapped_column(
-        String(30),
-        nullable=False
-    )
+    case_role: Mapped[str] = mapped_column(String(30), nullable=False)
 
     created_at: Mapped[object] = mapped_column(
         DateTime(timezone=True),
