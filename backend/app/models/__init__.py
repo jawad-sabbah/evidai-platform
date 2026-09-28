@@ -5,6 +5,7 @@ from app.models.ai_message_citation import AIMessageCitation
 from app.models.ai_session import AISession
 from app.models.case import Case
 from app.models.case_member import CaseMember
+from app.models.case_number_counter import CaseNumberCounter
 from app.models.claim import Claim
 from app.models.claim_evidence import ClaimEvidence
 from app.models.entity import Entity
@@ -37,6 +38,7 @@ __all__ = [
     "AISession",
     "Case",
     "CaseMember",
+    "CaseNumberCounter",
     "Claim",
     "ClaimEvidence",
     "Entity",
