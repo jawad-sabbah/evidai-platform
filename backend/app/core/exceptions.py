@@ -12,3 +12,19 @@ class ConfigurationError(Exception):
 
 class CaseConflictError(Exception):
     pass
+
+
+class CaseMemberNotFoundError(Exception):
+    pass
+
+
+class CaseMemberAlreadyExistsError(Exception):
+    pass
+
+
+class LastOwnerError(Exception):
+    pass
+
+
+class UserNotFoundError(Exception):
+    pass
