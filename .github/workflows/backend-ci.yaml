@@ -59,7 +59,7 @@ jobs:
         run: python -m ruff format --check .
 
       - name: Initialize test database
-        run: python tests/setup_ci_db.py
+        run: python -m tests.setup_ci_db
 
       - name: Run tests
         run: python -m pytest
