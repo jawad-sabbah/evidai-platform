@@ -3,9 +3,13 @@ from fastapi.responses import JSONResponse
 
 from app.core.exceptions import (
     CaseConflictError,
+    CaseMemberAlreadyExistsError,
+    CaseMemberNotFoundError,
     CaseNotFoundError,
     ConfigurationError,
     InvalidCaseTransitionError,
+    LastOwnerError,
+    UserNotFoundError,
 )
 
 
@@ -48,4 +52,44 @@ def register_exception_handlers(app: FastAPI) -> None:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"detail": "Server configuration error"},
+        )
+
+    @app.exception_handler(CaseMemberNotFoundError)
+    async def case_member_not_found_handler(
+        request: Request,
+        exc: CaseMemberNotFoundError,
+    ) -> JSONResponse:
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content={"detail": str(exc)},
+        )
+
+    @app.exception_handler(UserNotFoundError)
+    async def user_not_found_handler(
+        request: Request,
+        exc: UserNotFoundError,
+    ) -> JSONResponse:
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content={"detail": str(exc)},
+        )
+
+    @app.exception_handler(CaseMemberAlreadyExistsError)
+    async def case_member_already_exists_handler(
+        request: Request,
+        exc: CaseMemberAlreadyExistsError,
+    ) -> JSONResponse:
+        return JSONResponse(
+            status_code=status.HTTP_409_CONFLICT,
+            content={"detail": str(exc)},
+        )
+
+    @app.exception_handler(LastOwnerError)
+    async def last_owner_handler(
+        request: Request,
+        exc: LastOwnerError,
+    ) -> JSONResponse:
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"detail": str(exc)},
         )
