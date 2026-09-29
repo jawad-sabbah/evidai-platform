@@ -13,13 +13,20 @@ from app.core.exceptions import (
     InvalidCaseTransitionError,
 )
 from app.models.case import Case
+from app.models.case_member import CaseMember
+from app.repositories.case_member_repository import CaseMemberRepository
 from app.repositories.case_repository import CaseRepository
 from app.schemas.case import CaseCreate, CaseUpdate
 
 
 class CaseService:
-    def __init__(self, repository: CaseRepository) -> None:
+    def __init__(
+        self,
+        repository: CaseRepository,
+        case_member_repository: CaseMemberRepository,
+    ) -> None:
         self.repository = repository
+        self.case_member_repository = case_member_repository
 
     def list_cases(self, db: Session) -> list[Case]:
         return self.repository.get_all(db)
@@ -45,10 +52,22 @@ class CaseService:
         )
 
         try:
+            # create the case
             self.repository.create(db, case)
+
+            case_member = CaseMember(
+                case_id=case.id,
+                user_id=settings.dev_user_id,
+                case_role="OWNER",
+            )
+
+            # create the case member after a case creation
+            self.case_member_repository.create(db, case_member)
+
             db.commit()
             db.refresh(case)
             return case
+
         except IntegrityError as exc:
             db.rollback()
             raise CaseConflictError(
@@ -133,5 +152,5 @@ class CaseService:
 
 
 case_service = CaseService(
-    repository=CaseRepository(),
+    repository=CaseRepository(), case_member_repository=CaseMemberRepository()
 )

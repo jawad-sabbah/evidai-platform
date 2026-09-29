@@ -30,6 +30,17 @@ def test_create_case(db_session):
     assert case.status == CaseStatus.OPEN.value
     assert case.case_number.startswith("CASE-")
 
+    case_member = case_service.case_member_repository.get_by_case_and_user(
+        db=db_session,
+        case_id=case.id,
+        user_id=case.created_by,
+    )
+
+    assert case_member is not None
+    assert case_member.case_id == case.id
+    assert case_member.user_id == case.created_by
+    assert case_member.case_role == "OWNER"
+
 
 def test_get_case(db_session):
     payload = CaseCreate(
