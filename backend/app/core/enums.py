@@ -21,3 +21,10 @@ class CaseStatus(StrEnum):
     IN_REVIEW = "IN_REVIEW"
     CLOSED = "CLOSED"
     ARCHIVED = "ARCHIVED"
+
+
+class CaseRole(StrEnum):
+    OWNER = "OWNER"
+    INVESTIGATOR = "INVESTIGATOR"
+    REVIEWER = "REVIEWER"
+    VIEWER = "VIEWER"    
