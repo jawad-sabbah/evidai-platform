@@ -27,4 +27,4 @@ class CaseRole(StrEnum):
     OWNER = "OWNER"
     INVESTIGATOR = "INVESTIGATOR"
     REVIEWER = "REVIEWER"
-    VIEWER = "VIEWER"    
+    VIEWER = "VIEWER"
