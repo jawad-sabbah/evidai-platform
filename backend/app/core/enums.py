@@ -28,3 +28,13 @@ class CaseRole(StrEnum):
     INVESTIGATOR = "INVESTIGATOR"
     REVIEWER = "REVIEWER"
     VIEWER = "VIEWER"
+
+
+class UserSystemRole(StrEnum):
+    ADMIN = "ADMIN"
+    USER = "USER"
+
+
+class UserStatus(StrEnum):
+    ACTIVE = "ACTIVE"
+    DISABLED = "DISABLED"
