@@ -34,7 +34,7 @@ class AuthService:
         )
 
         try:
-            self.user_repository.create(
+            self.user_repository.create_user(
                 db,
                 user,
             )
