@@ -7,6 +7,7 @@ from app.core.exceptions import (
     CaseMemberNotFoundError,
     CaseNotFoundError,
     ConfigurationError,
+    EmailAlreadyExistsError,
     InvalidCaseTransitionError,
     LastOwnerError,
     UserNotFoundError,
@@ -91,5 +92,15 @@ def register_exception_handlers(app: FastAPI) -> None:
     ) -> JSONResponse:
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
+            content={"detail": str(exc)},
+        )
+
+    @app.exception_handler(EmailAlreadyExistsError)
+    async def email_already_exists_handler(
+        request: Request,
+        exc: EmailAlreadyExistsError,
+    ) -> JSONResponse:
+        return JSONResponse(
+            status_code=status.HTTP_409_CONFLICT,
             content={"detail": str(exc)},
         )
