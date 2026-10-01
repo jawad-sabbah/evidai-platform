@@ -1,7 +1,7 @@
 from fastapi import APIRouter, status
 
 from app.api.dependencies import DbSession
-from app.schemas.auth import UserResponse, UserCreate
+from app.schemas.auth import UserCreate, UserResponse
 from app.services.auth_service import auth_service
 
 router = APIRouter(
