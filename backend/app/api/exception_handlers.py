@@ -9,8 +9,8 @@ from app.core.exceptions import (
     ConfigurationError,
     EmailAlreadyExistsError,
     InvalidCaseTransitionError,
-    InvalidTokenError,
     InvalidCredentialsError,
+    InvalidTokenError,
     LastOwnerError,
     UserNotFoundError,
 )
@@ -120,14 +120,13 @@ def register_exception_handlers(app: FastAPI) -> None:
             },
         )
 
-
     @app.exception_handler(InvalidCredentialsError)
-    async def invalid_credentials_handler(  
-    request: Request,
-    exc: InvalidCredentialsError,
+    async def invalid_credentials_handler(
+        request: Request,
+        exc: InvalidCredentialsError,
     ) -> JSONResponse:
         return JSONResponse(
             status_code=status.HTTP_401_UNAUTHORIZED,
             content={"detail": str(exc)},
             headers={"WWW-Authenticate": "Bearer"},
-    )
+        )
