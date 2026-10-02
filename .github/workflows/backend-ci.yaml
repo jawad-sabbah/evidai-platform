@@ -33,6 +33,9 @@ jobs:
     env:
       DATABASE_URL: postgresql+psycopg://postgres:postgres@localhost:5432/evidenceiq_test
       DEV_USER_ID: 00000000-0000-0000-0000-000000000001
+      JWT_SECRET_KEY: ci-test-secret-key-that-is-at-least-32-bytes-long
+      JWT_ALGORITHM: HS256
+      JWT_ACCESS_TOKEN_EXPIRE_MINUTES: 30
 
     defaults:
       run:

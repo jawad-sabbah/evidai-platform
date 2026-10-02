@@ -36,3 +36,7 @@ class EmailAlreadyExistsError(Exception):
 
 class InvalidTokenError(Exception):
     pass
+
+
+class InvalidCredentialsError(Exception):
+    pass

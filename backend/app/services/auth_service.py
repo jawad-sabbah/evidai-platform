@@ -1,10 +1,10 @@
 from sqlalchemy.orm import Session
 
-from app.core.exceptions import EmailAlreadyExistsError
-from app.core.security import hash_password
+from app.core.exceptions import EmailAlreadyExistsError, InvalidCredentialsError
+from app.core.security import create_access_token, hash_password, verify_password
 from app.models.user import User
 from app.repositories.user_repository import UserRepository
-from app.schemas.auth import UserCreate
+from app.schemas.auth import LoginRequest, UserCreate
 
 
 class AuthService:
@@ -47,6 +47,30 @@ class AuthService:
         except Exception:
             db.rollback()
             raise
+
+    def login(
+        self,
+        db: Session,
+        payload: LoginRequest,
+    ) -> str:
+        user = self.user_repository.get_by_email(
+            db,
+            payload.email,
+        )
+
+        if user is None:
+            raise InvalidCredentialsError("Invalid email or password")
+
+        if not verify_password(
+            payload.password,
+            user.password_hash,
+        ):
+            raise InvalidCredentialsError("Invalid email or password")
+
+        if user.status != "ACTIVE":
+            raise InvalidCredentialsError("User account is disabled")
+
+        return create_access_token(user.id)
 
 
 auth_service = AuthService(
