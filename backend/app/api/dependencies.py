@@ -44,9 +44,14 @@ def get_current_user(
 
     user_repository = UserRepository()
 
+    try:
+        user_uuid = UUID(user_id)
+    except (ValueError, TypeError) as exc:
+        raise InvalidTokenError("Invalid access token") from exc
+
     user = user_repository.get_by_id(
         db,
-        UUID(user_id),
+        user_uuid,
     )
 
     if user is None:

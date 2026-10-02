@@ -4,8 +4,11 @@ from uuid import UUID
 import jwt
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
+from jwt import ExpiredSignatureError
+from jwt import InvalidTokenError as PyJWTInvalidTokenError
 
 from app.core.config import settings
+from app.core.exceptions import InvalidTokenError
 
 password_hasher = PasswordHasher()
 
@@ -46,8 +49,15 @@ def create_access_token(user_id: UUID) -> str:
 
 
 def decode_access_token(token: str) -> dict:
-    return jwt.decode(
-        token,
-        settings.jwt_secret_key,
-        algorithms=[settings.jwt_algorithm],
-    )
+    try:
+        return jwt.decode(
+            token,
+            settings.jwt_secret_key,
+            algorithms=[settings.jwt_algorithm],
+        )
+
+    except ExpiredSignatureError as exc:
+        raise InvalidTokenError("Access token has expired") from exc
+
+    except PyJWTInvalidTokenError as exc:
+        raise InvalidTokenError("Invalid access token") from exc
