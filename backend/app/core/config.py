@@ -12,5 +12,22 @@ class Settings:
         UUID(os.environ["DEV_USER_ID"]) if os.getenv("DEV_USER_ID") else None
     )
 
+    jwt_secret_key: str = os.getenv(
+        "JWT_SECRET_KEY",
+        "",
+    )
+
+    jwt_algorithm: str = os.getenv(
+        "JWT_ALGORITHM",
+        "HS256",
+    )
+
+    jwt_access_token_expire_minutes: int = int(
+        os.getenv(
+            "JWT_ACCESS_TOKEN_EXPIRE_MINUTES",
+            "30",
+        )
+    )
+
 
 settings = Settings()
