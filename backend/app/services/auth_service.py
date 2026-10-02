@@ -6,6 +6,9 @@ from app.models.user import User
 from app.repositories.user_repository import UserRepository
 from app.schemas.auth import UserCreate
 
+from app.core.exceptions import InvalidCredentialsError
+from app.core.security import create_access_token, verify_password
+from app.schemas.auth import LoginRequest
 
 class AuthService:
     def __init__(
@@ -48,6 +51,35 @@ class AuthService:
             db.rollback()
             raise
 
+    def login(
+    self,
+    db: Session,
+    payload: LoginRequest,
+    ) -> str:
+        user = self.user_repository.get_by_email(
+            db,
+            payload.email,
+        )
+
+        if user is None:
+            raise InvalidCredentialsError(
+                "Invalid email or password"
+            )
+
+        if not verify_password(
+            payload.password,
+            user.password_hash,
+        ):
+            raise InvalidCredentialsError(
+                "Invalid email or password"
+            )
+
+        if user.status != "ACTIVE":
+            raise InvalidCredentialsError(
+                "User account is disabled"
+            )
+
+        return create_access_token(user.id)
 
 auth_service = AuthService(
     user_repository=UserRepository(),
