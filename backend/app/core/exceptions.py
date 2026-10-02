@@ -32,3 +32,7 @@ class UserNotFoundError(Exception):
 
 class EmailAlreadyExistsError(Exception):
     pass
+
+
+class InvalidTokenError(Exception):
+    pass

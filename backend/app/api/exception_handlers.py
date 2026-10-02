@@ -9,6 +9,7 @@ from app.core.exceptions import (
     ConfigurationError,
     EmailAlreadyExistsError,
     InvalidCaseTransitionError,
+    InvalidTokenError,
     LastOwnerError,
     UserNotFoundError,
 )
@@ -103,4 +104,17 @@ def register_exception_handlers(app: FastAPI) -> None:
         return JSONResponse(
             status_code=status.HTTP_409_CONFLICT,
             content={"detail": str(exc)},
+        )
+
+    @app.exception_handler(InvalidTokenError)
+    async def invalid_token_handler(
+        request: Request,
+        exc: InvalidTokenError,
+    ) -> JSONResponse:
+        return JSONResponse(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            content={"detail": str(exc)},
+            headers={
+                "WWW-Authenticate": "Bearer",
+            },
         )
