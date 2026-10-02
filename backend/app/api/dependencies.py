@@ -1,12 +1,23 @@
 from collections.abc import Generator
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import Depends
+from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
+from app.core.exceptions import InvalidTokenError
+from app.core.security import decode_access_token
 from app.db.session import SessionLocal
+from app.models.user import User
+from app.repositories.user_repository import UserRepository
+
+oauth2_scheme = OAuth2PasswordBearer(
+    tokenUrl="/auth/login",
+)
 
 
+## get_db() create sqlalchemy session
 def get_db() -> Generator[Session, None, None]:
     db = SessionLocal()
 
@@ -16,4 +27,33 @@ def get_db() -> Generator[Session, None, None]:
         db.close()
 
 
+## DbSession give reusable db dependency
 DbSession = Annotated[Session, Depends(get_db)]
+
+
+def get_current_user(
+    db: DbSession,
+    token: Annotated[str, Depends(oauth2_scheme)],
+) -> User:
+    payload = decode_access_token(token)
+
+    user_id = payload.get("sub")
+
+    if user_id is None:
+        raise InvalidTokenError("Invalid access token")
+
+    user_repository = UserRepository()
+
+    user = user_repository.get_by_id(
+        db,
+        UUID(user_id),
+    )
+
+    if user is None:
+        raise InvalidTokenError("User not found")
+
+    return user
+
+
+## reusable authenticated-user dependency
+CurrentUser = Annotated[User, Depends(get_current_user)]
