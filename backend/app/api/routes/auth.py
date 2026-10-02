@@ -1,7 +1,7 @@
 from fastapi import APIRouter, status
 
 from app.api.dependencies import DbSession
-from app.schemas.auth import UserCreate, UserResponse
+from app.schemas.auth import LoginRequest, TokenResponse, UserCreate, UserResponse
 from app.services.auth_service import auth_service
 
 router = APIRouter(
@@ -23,4 +23,23 @@ def register(
     return auth_service.register(
         db=db,
         payload=payload,
+    )
+
+
+@router.post(
+    "/login",
+    response_model=TokenResponse,
+    status_code=status.HTTP_200_OK,
+)
+def login(
+    payload: LoginRequest,
+    db: DbSession,
+) -> TokenResponse:
+    access_token = auth_service.login(
+        db=db,
+        payload=payload,
+    )
+
+    return TokenResponse(
+        access_token=access_token,
     )
