@@ -6,7 +6,7 @@ from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
-from app.core.enums import SystemRole
+from app.core.enums import CaseRole, SystemRole
 from app.core.exceptions import ForbiddenError, InvalidTokenError
 from app.core.security import decode_access_token
 from app.db.session import SessionLocal
@@ -100,4 +100,32 @@ def require_case_member(
 CaseMemberUser = Annotated[
     User,
     Depends(require_case_member),
+]
+
+
+def require_case_owner(
+    case_id: UUID,
+    db: DbSession,
+    current_user: CurrentUser,
+) -> User:
+    repository = CaseMemberRepository()
+
+    membership = repository.get_by_case_and_user(
+        db=db,
+        case_id=case_id,
+        user_id=current_user.id,
+    )
+
+    if membership is None:
+        raise ForbiddenError("You are not a member of this case")
+
+    if membership.case_role != CaseRole.OWNER.value:
+        raise ForbiddenError("Case owner access required")
+
+    return current_user
+
+
+CaseOwnerUser = Annotated[
+    User,
+    Depends(require_case_owner),
 ]

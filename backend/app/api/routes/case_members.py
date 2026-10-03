@@ -2,7 +2,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Response, status
 
-from app.api.dependencies import CaseMemberUser, DbSession
+from app.api.dependencies import CaseMemberUser, CaseOwnerUser, DbSession
 from app.schemas.case_member import (
     CaseMemberCreate,
     CaseMemberResponse,
@@ -41,7 +41,7 @@ def add_case_member(
     case_id: UUID,
     payload: CaseMemberCreate,
     db: DbSession,
-    current_user: CaseMemberUser,
+    current_user: CaseOwnerUser,
 ):
     return case_member_service.add_member(
         db=db,
@@ -60,7 +60,7 @@ def update_case_member(
     member_id: UUID,
     payload: CaseMemberUpdate,
     db: DbSession,
-    current_user: CaseMemberUser,
+    current_user: CaseOwnerUser,
 ):
     return case_member_service.update_member(
         db=db,
@@ -78,7 +78,7 @@ def delete_case_member(
     case_id: UUID,
     member_id: UUID,
     db: DbSession,
-    current_user: CaseMemberUser,
+    current_user: CaseOwnerUser,
 ) -> Response:
     case_member_service.delete_member(
         db=db,
