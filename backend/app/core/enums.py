@@ -30,7 +30,7 @@ class CaseRole(StrEnum):
     VIEWER = "VIEWER"
 
 
-class UserSystemRole(StrEnum):
+class SystemRole(StrEnum):
     ADMIN = "ADMIN"
     USER = "USER"
 

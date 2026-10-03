@@ -2,6 +2,7 @@ from uuid import uuid4
 
 from app.core.config import settings
 from app.core.enums import CaseRole, CaseType
+from app.core.security import create_access_token
 from app.models.user import User
 from app.schemas.case import CaseCreate
 from app.schemas.case_member import CaseMemberCreate
@@ -22,6 +23,11 @@ def create_user(db_session, email: str) -> User:
     db_session.flush()
 
     return user
+
+
+def auth_headers_for_user(user: User) -> dict[str, str]:
+    token = create_access_token(user.id)
+    return {"Authorization": f"Bearer {token}"}
 
 
 def create_case(db_session):
@@ -130,7 +136,7 @@ def test_add_member_with_invalid_user_uuid_returns_422(
     assert response.status_code == 422
 
 
-def test_add_member_to_missing_case_returns_404(
+def test_add_member_to_missing_case_returns_403(
     client,
     db_session,
     auth_headers,
@@ -149,8 +155,8 @@ def test_add_member_to_missing_case_returns_404(
         },
     )
 
-    assert response.status_code == 404
-    assert response.json()["detail"] == "Case not found"
+    assert response.status_code == 403
+    assert response.json()["detail"] == "You are not a member of this case"
 
 
 def test_add_missing_user_returns_404(
@@ -564,7 +570,7 @@ def test_owner_can_be_deleted_when_another_owner_exists(
     assert response.status_code == 204
 
 
-def test_list_members_for_missing_case_returns_404(
+def test_list_members_for_missing_case_returns_403(
     client,
     auth_headers,
 ):
@@ -573,8 +579,8 @@ def test_list_members_for_missing_case_returns_404(
         headers=auth_headers,
     )
 
-    assert response.status_code == 404
-    assert response.json()["detail"] == "Case not found"
+    assert response.status_code == 403
+    assert response.json()["detail"] == "You are not a member of this case"
 
 
 def test_list_case_members_without_token_returns_401(
@@ -631,3 +637,161 @@ def test_delete_case_member_without_token_returns_401(client, db_session):
     )
 
     assert response.status_code == 401
+
+
+def test_non_member_cannot_list_case_members(
+    client,
+    db_session,
+):
+    case = create_case(db_session)
+
+    non_member = create_user(
+        db_session,
+        "non-member-list@example.com",
+    )
+
+    headers = auth_headers_for_user(non_member)
+
+    response = client.get(
+        f"/cases/{case.id}/members",
+        headers=headers,
+    )
+
+    assert response.status_code == 403
+    assert response.json()["detail"] == "You are not a member of this case"
+
+
+def test_non_member_cannot_add_case_member(
+    client,
+    db_session,
+):
+    case = create_case(db_session)
+
+    non_member = create_user(
+        db_session,
+        "non-member-add@example.com",
+    )
+
+    target_user = create_user(
+        db_session,
+        "target-add@example.com",
+    )
+
+    headers = auth_headers_for_user(non_member)
+
+    response = client.post(
+        f"/cases/{case.id}/members",
+        headers=headers,
+        json={
+            "user_id": str(target_user.id),
+            "case_role": "VIEWER",
+        },
+    )
+
+    assert response.status_code == 403
+    assert response.json()["detail"] == "You are not a member of this case"
+
+
+def test_non_owner_cannot_add_case_member(
+    client,
+    db_session,
+):
+    case = create_case(db_session)
+
+    viewer = create_user(
+        db_session,
+        "viewer-add@example.com",
+    )
+
+    case_member_service.add_member(
+        db=db_session,
+        case_id=case.id,
+        payload=CaseMemberCreate(
+            user_id=viewer.id,
+            case_role=CaseRole.VIEWER,
+        ),
+    )
+
+    target_user = create_user(
+        db_session,
+        "target-viewer-add@example.com",
+    )
+
+    headers = auth_headers_for_user(viewer)
+
+    response = client.post(
+        f"/cases/{case.id}/members",
+        headers=headers,
+        json={
+            "user_id": str(target_user.id),
+            "case_role": "VIEWER",
+        },
+    )
+
+    assert response.status_code == 403
+    assert response.json()["detail"] == "Case owner access required"
+
+
+def test_non_owner_cannot_update_case_member(
+    client,
+    db_session,
+):
+    case = create_case(db_session)
+
+    viewer = create_user(
+        db_session,
+        "viewer-update@example.com",
+    )
+
+    viewer_member = case_member_service.add_member(
+        db=db_session,
+        case_id=case.id,
+        payload=CaseMemberCreate(
+            user_id=viewer.id,
+            case_role=CaseRole.VIEWER,
+        ),
+    )
+
+    headers = auth_headers_for_user(viewer)
+
+    response = client.patch(
+        f"/cases/{case.id}/members/{viewer_member.id}",
+        headers=headers,
+        json={
+            "case_role": "REVIEWER",
+        },
+    )
+
+    assert response.status_code == 403
+    assert response.json()["detail"] == "Case owner access required"
+
+
+def test_non_owner_cannot_delete_case_member(
+    client,
+    db_session,
+):
+    case = create_case(db_session)
+
+    viewer = create_user(
+        db_session,
+        "viewer-delete@example.com",
+    )
+
+    viewer_member = case_member_service.add_member(
+        db=db_session,
+        case_id=case.id,
+        payload=CaseMemberCreate(
+            user_id=viewer.id,
+            case_role=CaseRole.VIEWER,
+        ),
+    )
+
+    headers = auth_headers_for_user(viewer)
+
+    response = client.delete(
+        f"/cases/{case.id}/members/{viewer_member.id}",
+        headers=headers,
+    )
+
+    assert response.status_code == 403
+    assert response.json()["detail"] == "Case owner access required"

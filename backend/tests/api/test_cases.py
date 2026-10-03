@@ -1,6 +1,34 @@
 from uuid import uuid4
 
 from app.core.config import settings
+from app.core.enums import CaseType
+from app.core.security import create_access_token
+from app.models.user import User
+from app.schemas.case import CaseCreate
+from app.services.case_service import case_service
+
+
+def create_user(db_session, email: str) -> User:
+    user = User(
+        full_name="Authorization Test User",
+        email=email,
+        password_hash="TEST_ONLY",
+        system_role="USER",
+        status="ACTIVE",
+    )
+
+    db_session.add(user)
+    db_session.flush()
+
+    return user
+
+
+def auth_headers_for_user(user: User) -> dict[str, str]:
+    token = create_access_token(user.id)
+
+    return {
+        "Authorization": f"Bearer {token}",
+    }
 
 
 def test_list_cases(client, auth_headers):
@@ -69,8 +97,8 @@ def test_get_case_not_found(client, auth_headers):
         headers=auth_headers,
     )
 
-    assert response.status_code == 404
-    assert response.json()["detail"] == "Case not found"
+    assert response.status_code == 403
+    assert response.json()["detail"] == "You are not a member of this case"
 
 
 def test_update_case(client, auth_headers):
@@ -115,6 +143,63 @@ def test_invalid_case_type(client, auth_headers):
     )
 
     assert response.status_code == 422
+
+
+def test_non_member_cannot_get_case(
+    client,
+    db_session,
+):
+    case = case_service.create_case(
+        db=db_session,
+        payload=CaseCreate(
+            title="Protected Case",
+            case_type=CaseType.OTHER,
+        ),
+        created_by=settings.dev_user_id,
+    )
+
+    non_member = create_user(
+        db_session,
+        "non-member-get-case@example.com",
+    )
+
+    response = client.get(
+        f"/cases/{case.id}",
+        headers=auth_headers_for_user(non_member),
+    )
+
+    assert response.status_code == 403
+    assert response.json()["detail"] == "You are not a member of this case"
+
+
+def test_non_member_cannot_update_case(
+    client,
+    db_session,
+):
+    case = case_service.create_case(
+        db=db_session,
+        payload=CaseCreate(
+            title="Protected Update Case",
+            case_type=CaseType.OTHER,
+        ),
+        created_by=settings.dev_user_id,
+    )
+
+    non_member = create_user(
+        db_session,
+        "non-member-update-case@example.com",
+    )
+
+    response = client.patch(
+        f"/cases/{case.id}",
+        headers=auth_headers_for_user(non_member),
+        json={
+            "title": "Unauthorized Update",
+        },
+    )
+
+    assert response.status_code == 403
+    assert response.json()["detail"] == "You are not a member of this case"
 
 
 def test_list_cases_without_token_returns_401(client):

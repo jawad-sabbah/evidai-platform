@@ -2,7 +2,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, status
 
-from app.api.dependencies import CurrentUser, DbSession
+from app.api.dependencies import CaseMemberUser, CurrentUser, DbSession
 from app.schemas.case import CaseCreate, CaseResponse, CaseUpdate
 from app.services.case_service import case_service
 
@@ -35,7 +35,7 @@ def create_case(payload: CaseCreate, db: DbSession, current_user: CurrentUser):
     response_model=CaseResponse,
     status_code=status.HTTP_200_OK,
 )
-def get_case(case_id: UUID, db: DbSession, current_user: CurrentUser):
+def get_case(case_id: UUID, db: DbSession, current_user: CaseMemberUser):
     return case_service.get_case(
         db=db,
         case_id=case_id,
@@ -48,7 +48,7 @@ def get_case(case_id: UUID, db: DbSession, current_user: CurrentUser):
     status_code=status.HTTP_200_OK,
 )
 def update_case(
-    case_id: UUID, payload: CaseUpdate, db: DbSession, current_user: CurrentUser
+    case_id: UUID, payload: CaseUpdate, db: DbSession, current_user: CaseMemberUser
 ):
     return case_service.update_case(
         db=db,
