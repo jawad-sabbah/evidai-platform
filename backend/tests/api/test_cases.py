@@ -3,16 +3,20 @@ from uuid import uuid4
 from app.core.config import settings
 
 
-def test_list_cases(client):
-    response = client.get("/cases")
+def test_list_cases(client, auth_headers):
+    response = client.get(
+        "/cases",
+        headers=auth_headers,
+    )
 
     assert response.status_code == 200
     assert isinstance(response.json(), list)
 
 
-def test_create_case(client):
+def test_create_case(client, auth_headers):
     response = client.post(
         "/cases",
+        headers=auth_headers,
         json={
             "title": "Test Fraud Case",
             "description": "Created during automated testing",
@@ -32,9 +36,10 @@ def test_create_case(client):
     assert data["created_by"] == str(settings.dev_user_id)
 
 
-def test_get_case(client):
+def test_get_case(client, auth_headers):
     create_response = client.post(
         "/cases",
+        headers=auth_headers,
         json={
             "title": "Case To Retrieve",
             "description": "Retrieve this case",
@@ -42,37 +47,49 @@ def test_get_case(client):
         },
     )
 
+    assert create_response.status_code == 201
+
     case_id = create_response.json()["id"]
 
-    response = client.get(f"/cases/{case_id}")
+    response = client.get(
+        f"/cases/{case_id}",
+        headers=auth_headers,
+    )
 
     assert response.status_code == 200
     assert response.json()["id"] == case_id
     assert response.json()["title"] == "Case To Retrieve"
 
 
-def test_get_case_not_found(client):
+def test_get_case_not_found(client, auth_headers):
     case_id = uuid4()
 
-    response = client.get(f"/cases/{case_id}")
+    response = client.get(
+        f"/cases/{case_id}",
+        headers=auth_headers,
+    )
 
     assert response.status_code == 404
     assert response.json()["detail"] == "Case not found"
 
 
-def test_update_case(client):
+def test_update_case(client, auth_headers):
     create_response = client.post(
         "/cases",
+        headers=auth_headers,
         json={
             "title": "Original Case",
             "case_type": "OTHER",
         },
     )
 
+    assert create_response.status_code == 201
+
     case_id = create_response.json()["id"]
 
     response = client.patch(
         f"/cases/{case_id}",
+        headers=auth_headers,
         json={
             "title": "Updated Case",
             "status": "IN_REVIEW",
@@ -87,9 +104,10 @@ def test_update_case(client):
     assert data["status"] == "IN_REVIEW"
 
 
-def test_invalid_case_type(client):
+def test_invalid_case_type(client, auth_headers):
     response = client.post(
         "/cases",
+        headers=auth_headers,
         json={
             "title": "Invalid Type",
             "case_type": "INVALID_TYPE",
@@ -97,3 +115,9 @@ def test_invalid_case_type(client):
     )
 
     assert response.status_code == 422
+
+
+def test_list_cases_without_token_returns_401(client):
+    response = client.get("/cases")
+
+    assert response.status_code == 401

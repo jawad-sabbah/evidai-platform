@@ -11,6 +11,8 @@ from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from app.api.dependencies import get_db
+from app.core.config import settings
+from app.core.security import create_access_token
 from app.db.session import engine
 from app.main import app
 
@@ -44,3 +46,10 @@ def client(db_session):
         yield test_client
 
     app.dependency_overrides.clear()
+
+
+@pytest.fixture
+def auth_headers():
+    token = create_access_token(settings.dev_user_id)
+
+    return {"Authorization": f"Bearer {token}"}
