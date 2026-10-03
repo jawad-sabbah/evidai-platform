@@ -2,7 +2,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
-from app.core.enums import UserStatus, SystemRole
+from app.core.enums import SystemRole, UserStatus
 
 
 class UserCreate(BaseModel):
