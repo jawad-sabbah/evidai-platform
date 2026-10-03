@@ -1,5 +1,6 @@
 from uuid import uuid4
 
+from app.core.config import settings
 from app.core.enums import CaseRole, CaseType
 from app.models.user import User
 from app.schemas.case import CaseCreate
@@ -30,6 +31,7 @@ def create_case(db_session):
             title="Case Member Test Case",
             case_type=CaseType.FRAUD,
         ),
+        created_by=settings.dev_user_id,
     )
 
 
@@ -308,6 +310,7 @@ def test_update_member_from_other_case_returns_404(
             title="Other Case",
             case_type=CaseType.OTHER,
         ),
+        created_by=settings.dev_user_id,
     )
 
     user = create_user(
@@ -480,6 +483,7 @@ def test_delete_member_from_other_case_returns_404(
             title="Second Case",
             case_type=CaseType.OTHER,
         ),
+        created_by=settings.dev_user_id,
     )
 
     user = create_user(
@@ -581,6 +585,49 @@ def test_list_case_members_without_token_returns_401(
 
     response = client.get(
         f"/cases/{case.id}/members",
+    )
+
+    assert response.status_code == 401
+
+
+def test_add_case_member_without_token_returns_401(
+    client,
+    db_session,
+):
+    case = create_case(db_session)
+
+    response = client.post(
+        f"/cases/{case.id}/members",
+        json={
+            "user_id": "00000000-0000-0000-0000-000000000001",
+            "case_role": "VIEWER",
+        },
+    )
+
+    assert response.status_code == 401
+
+
+def test_update_case_member_without_token_returns_401(
+    client,
+    db_session,
+):
+    case = create_case(db_session)
+
+    response = client.patch(
+        f"/cases/{case.id}/members/00000000-0000-0000-0000-000000000001",
+        json={
+            "case_role": "VIEWER",
+        },
+    )
+
+    assert response.status_code == 401
+
+
+def test_delete_case_member_without_token_returns_401(client, db_session):
+    case = create_case(db_session)
+
+    response = client.delete(
+        f"/cases/{case.id}/members/00000000-0000-0000-0000-000000000001"
     )
 
     assert response.status_code == 401

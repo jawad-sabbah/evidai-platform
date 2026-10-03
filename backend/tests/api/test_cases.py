@@ -121,3 +121,32 @@ def test_list_cases_without_token_returns_401(client):
     response = client.get("/cases")
 
     assert response.status_code == 401
+
+
+def test_create_case_without_token_returns_401(client):
+    response = client.post(
+        "/cases",
+        json={
+            "title": "Unauthorized Case",
+            "case_type": "OTHER",
+        },
+    )
+
+    assert response.status_code == 401
+
+
+def test_get_case_without_token_returns_401(client):
+    response = client.get("/cases/00000000-0000-0000-0000-000000000001")
+
+    assert response.status_code == 401
+
+
+def test_update_case_without_token_returns_401(client):
+    response = client.patch(
+        "/cases/00000000-0000-0000-0000-000000000001",
+        json={
+            "title": "Unauthorized Update",
+        },
+    )
+
+    assert response.status_code == 401
