@@ -11,6 +11,7 @@ from app.core.exceptions import ForbiddenError, InvalidTokenError
 from app.core.security import decode_access_token
 from app.db.session import SessionLocal
 from app.models.user import User
+from app.repositories.case_member_repository import CaseMemberRepository
 from app.repositories.user_repository import UserRepository
 
 oauth2_scheme = OAuth2PasswordBearer(
@@ -75,3 +76,28 @@ def require_admin(
 
 
 AdminUser = Annotated[User, Depends(require_admin)]
+
+
+def require_case_member(
+    case_id: UUID,
+    db: DbSession,
+    current_user: CurrentUser,
+) -> User:
+    repository = CaseMemberRepository()
+
+    membership = repository.get_by_case_and_user(
+        db=db,
+        case_id=case_id,
+        user_id=current_user.id,
+    )
+
+    if membership is None:
+        raise ForbiddenError("You are not a member of this case")
+
+    return current_user
+
+
+CaseMemberUser = Annotated[
+    User,
+    Depends(require_case_member),
+]
