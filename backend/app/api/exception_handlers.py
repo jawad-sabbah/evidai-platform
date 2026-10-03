@@ -8,6 +8,7 @@ from app.core.exceptions import (
     CaseNotFoundError,
     ConfigurationError,
     EmailAlreadyExistsError,
+    ForbiddenError,
     InvalidCaseTransitionError,
     InvalidCredentialsError,
     InvalidTokenError,
@@ -129,4 +130,14 @@ def register_exception_handlers(app: FastAPI) -> None:
             status_code=status.HTTP_401_UNAUTHORIZED,
             content={"detail": str(exc)},
             headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    @app.exception_handler(ForbiddenError)
+    async def forbidden_handler(
+        request: Request,
+        exc: ForbiddenError,
+    ) -> JSONResponse:
+        return JSONResponse(
+            status_code=status.HTTP_403_FORBIDDEN,
+            content={"detail": str(exc)},
         )

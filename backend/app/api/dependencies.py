@@ -6,7 +6,8 @@ from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
-from app.core.exceptions import InvalidTokenError
+from app.core.enums import SystemRole
+from app.core.exceptions import ForbiddenError, InvalidTokenError
 from app.core.security import decode_access_token
 from app.db.session import SessionLocal
 from app.models.user import User
@@ -62,3 +63,15 @@ def get_current_user(
 
 ## reusable authenticated-user dependency
 CurrentUser = Annotated[User, Depends(get_current_user)]
+
+
+def require_admin(
+    current_user: CurrentUser,
+) -> User:
+    if current_user.system_role != SystemRole.ADMIN.value:
+        raise ForbiddenError("Admin access required")
+
+    return current_user
+
+
+AdminUser = Annotated[User, Depends(require_admin)]
