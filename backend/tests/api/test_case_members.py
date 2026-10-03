@@ -33,11 +33,16 @@ def create_case(db_session):
     )
 
 
-def test_list_case_members_returns_owner(client, db_session):
+def test_list_case_members_returns_owner(
+    client,
+    db_session,
+    auth_headers,
+):
     case = create_case(db_session)
 
     response = client.get(
         f"/cases/{case.id}/members",
+        headers=auth_headers,
     )
 
     assert response.status_code == 200
@@ -50,7 +55,11 @@ def test_list_case_members_returns_owner(client, db_session):
     assert data[0]["case_role"] == CaseRole.OWNER.value
 
 
-def test_add_case_member(client, db_session):
+def test_add_case_member(
+    client,
+    db_session,
+    auth_headers,
+):
     case = create_case(db_session)
 
     user = create_user(
@@ -60,6 +69,7 @@ def test_add_case_member(client, db_session):
 
     response = client.post(
         f"/cases/{case.id}/members",
+        headers=auth_headers,
         json={
             "user_id": str(user.id),
             "case_role": "INVESTIGATOR",
@@ -78,6 +88,7 @@ def test_add_case_member(client, db_session):
 def test_add_member_with_invalid_role_returns_422(
     client,
     db_session,
+    auth_headers,
 ):
     case = create_case(db_session)
 
@@ -88,6 +99,7 @@ def test_add_member_with_invalid_role_returns_422(
 
     response = client.post(
         f"/cases/{case.id}/members",
+        headers=auth_headers,
         json={
             "user_id": str(user.id),
             "case_role": "INVALID_ROLE",
@@ -100,11 +112,13 @@ def test_add_member_with_invalid_role_returns_422(
 def test_add_member_with_invalid_user_uuid_returns_422(
     client,
     db_session,
+    auth_headers,
 ):
     case = create_case(db_session)
 
     response = client.post(
         f"/cases/{case.id}/members",
+        headers=auth_headers,
         json={
             "user_id": "not-a-uuid",
             "case_role": "VIEWER",
@@ -117,6 +131,7 @@ def test_add_member_with_invalid_user_uuid_returns_422(
 def test_add_member_to_missing_case_returns_404(
     client,
     db_session,
+    auth_headers,
 ):
     user = create_user(
         db_session,
@@ -125,6 +140,7 @@ def test_add_member_to_missing_case_returns_404(
 
     response = client.post(
         f"/cases/{uuid4()}/members",
+        headers=auth_headers,
         json={
             "user_id": str(user.id),
             "case_role": "VIEWER",
@@ -138,11 +154,13 @@ def test_add_member_to_missing_case_returns_404(
 def test_add_missing_user_returns_404(
     client,
     db_session,
+    auth_headers,
 ):
     case = create_case(db_session)
 
     response = client.post(
         f"/cases/{case.id}/members",
+        headers=auth_headers,
         json={
             "user_id": str(uuid4()),
             "case_role": "VIEWER",
@@ -156,6 +174,7 @@ def test_add_missing_user_returns_404(
 def test_add_duplicate_member_returns_409(
     client,
     db_session,
+    auth_headers,
 ):
     case = create_case(db_session)
 
@@ -166,6 +185,7 @@ def test_add_duplicate_member_returns_409(
 
     first_response = client.post(
         f"/cases/{case.id}/members",
+        headers=auth_headers,
         json={
             "user_id": str(user.id),
             "case_role": "INVESTIGATOR",
@@ -176,6 +196,7 @@ def test_add_duplicate_member_returns_409(
 
     second_response = client.post(
         f"/cases/{case.id}/members",
+        headers=auth_headers,
         json={
             "user_id": str(user.id),
             "case_role": "VIEWER",
@@ -189,6 +210,7 @@ def test_add_duplicate_member_returns_409(
 def test_update_case_member_role(
     client,
     db_session,
+    auth_headers,
 ):
     case = create_case(db_session)
 
@@ -199,6 +221,7 @@ def test_update_case_member_role(
 
     create_response = client.post(
         f"/cases/{case.id}/members",
+        headers=auth_headers,
         json={
             "user_id": str(user.id),
             "case_role": "VIEWER",
@@ -209,6 +232,7 @@ def test_update_case_member_role(
 
     response = client.patch(
         f"/cases/{case.id}/members/{member_id}",
+        headers=auth_headers,
         json={
             "case_role": "REVIEWER",
         },
@@ -221,6 +245,7 @@ def test_update_case_member_role(
 def test_update_member_with_invalid_role_returns_422(
     client,
     db_session,
+    auth_headers,
 ):
     case = create_case(db_session)
 
@@ -231,6 +256,7 @@ def test_update_member_with_invalid_role_returns_422(
 
     create_response = client.post(
         f"/cases/{case.id}/members",
+        headers=auth_headers,
         json={
             "user_id": str(user.id),
             "case_role": "VIEWER",
@@ -241,6 +267,7 @@ def test_update_member_with_invalid_role_returns_422(
 
     response = client.patch(
         f"/cases/{case.id}/members/{member_id}",
+        headers=auth_headers,
         json={
             "case_role": "INVALID_ROLE",
         },
@@ -252,11 +279,13 @@ def test_update_member_with_invalid_role_returns_422(
 def test_update_missing_member_returns_404(
     client,
     db_session,
+    auth_headers,
 ):
     case = create_case(db_session)
 
     response = client.patch(
         f"/cases/{case.id}/members/{uuid4()}",
+        headers=auth_headers,
         json={
             "case_role": "VIEWER",
         },
@@ -269,6 +298,7 @@ def test_update_missing_member_returns_404(
 def test_update_member_from_other_case_returns_404(
     client,
     db_session,
+    auth_headers,
 ):
     first_case = create_case(db_session)
 
@@ -296,6 +326,7 @@ def test_update_member_from_other_case_returns_404(
 
     response = client.patch(
         f"/cases/{second_case.id}/members/{member.id}",
+        headers=auth_headers,
         json={
             "case_role": "REVIEWER",
         },
@@ -308,17 +339,20 @@ def test_update_member_from_other_case_returns_404(
 def test_cannot_demote_last_owner(
     client,
     db_session,
+    auth_headers,
 ):
     case = create_case(db_session)
 
     members_response = client.get(
         f"/cases/{case.id}/members",
+        headers=auth_headers,
     )
 
     owner_id = members_response.json()[0]["id"]
 
     response = client.patch(
         f"/cases/{case.id}/members/{owner_id}",
+        headers=auth_headers,
         json={
             "case_role": "INVESTIGATOR",
         },
@@ -334,6 +368,7 @@ def test_cannot_demote_last_owner(
 def test_owner_can_be_demoted_when_another_owner_exists(
     client,
     db_session,
+    auth_headers,
 ):
     case = create_case(db_session)
 
@@ -353,6 +388,7 @@ def test_owner_can_be_demoted_when_another_owner_exists(
 
     members_response = client.get(
         f"/cases/{case.id}/members",
+        headers=auth_headers,
     )
 
     owner_ids = [
@@ -365,6 +401,7 @@ def test_owner_can_be_demoted_when_another_owner_exists(
 
     response = client.patch(
         f"/cases/{case.id}/members/{original_owner_id}",
+        headers=auth_headers,
         json={
             "case_role": "VIEWER",
         },
@@ -377,6 +414,7 @@ def test_owner_can_be_demoted_when_another_owner_exists(
 def test_delete_case_member(
     client,
     db_session,
+    auth_headers,
 ):
     case = create_case(db_session)
 
@@ -387,6 +425,7 @@ def test_delete_case_member(
 
     create_response = client.post(
         f"/cases/{case.id}/members",
+        headers=auth_headers,
         json={
             "user_id": str(user.id),
             "case_role": "VIEWER",
@@ -397,12 +436,14 @@ def test_delete_case_member(
 
     response = client.delete(
         f"/cases/{case.id}/members/{member_id}",
+        headers=auth_headers,
     )
 
     assert response.status_code == 204
 
     members_response = client.get(
         f"/cases/{case.id}/members",
+        headers=auth_headers,
     )
 
     remaining_ids = {member["id"] for member in members_response.json()}
@@ -413,11 +454,13 @@ def test_delete_case_member(
 def test_delete_missing_member_returns_404(
     client,
     db_session,
+    auth_headers,
 ):
     case = create_case(db_session)
 
     response = client.delete(
         f"/cases/{case.id}/members/{uuid4()}",
+        headers=auth_headers,
     )
 
     assert response.status_code == 404
@@ -427,6 +470,7 @@ def test_delete_missing_member_returns_404(
 def test_delete_member_from_other_case_returns_404(
     client,
     db_session,
+    auth_headers,
 ):
     first_case = create_case(db_session)
 
@@ -454,6 +498,7 @@ def test_delete_member_from_other_case_returns_404(
 
     response = client.delete(
         f"/cases/{second_case.id}/members/{member.id}",
+        headers=auth_headers,
     )
 
     assert response.status_code == 404
@@ -463,17 +508,20 @@ def test_delete_member_from_other_case_returns_404(
 def test_cannot_delete_last_owner(
     client,
     db_session,
+    auth_headers,
 ):
     case = create_case(db_session)
 
     members_response = client.get(
         f"/cases/{case.id}/members",
+        headers=auth_headers,
     )
 
     owner_id = members_response.json()[0]["id"]
 
     response = client.delete(
         f"/cases/{case.id}/members/{owner_id}",
+        headers=auth_headers,
     )
 
     assert response.status_code == 400
@@ -486,6 +534,7 @@ def test_cannot_delete_last_owner(
 def test_owner_can_be_deleted_when_another_owner_exists(
     client,
     db_session,
+    auth_headers,
 ):
     case = create_case(db_session)
 
@@ -505,6 +554,7 @@ def test_owner_can_be_deleted_when_another_owner_exists(
 
     response = client.delete(
         f"/cases/{case.id}/members/{second_owner.id}",
+        headers=auth_headers,
     )
 
     assert response.status_code == 204
@@ -512,10 +562,25 @@ def test_owner_can_be_deleted_when_another_owner_exists(
 
 def test_list_members_for_missing_case_returns_404(
     client,
+    auth_headers,
 ):
     response = client.get(
         f"/cases/{uuid4()}/members",
+        headers=auth_headers,
     )
 
     assert response.status_code == 404
     assert response.json()["detail"] == "Case not found"
+
+
+def test_list_case_members_without_token_returns_401(
+    client,
+    db_session,
+):
+    case = create_case(db_session)
+
+    response = client.get(
+        f"/cases/{case.id}/members",
+    )
+
+    assert response.status_code == 401
