@@ -27,10 +27,7 @@ def list_cases(db: DbSession, current_user: CurrentUser):
     status_code=status.HTTP_201_CREATED,
 )
 def create_case(payload: CaseCreate, db: DbSession, current_user: CurrentUser):
-    return case_service.create_case(
-        db=db,
-        payload=payload,
-    )
+    return case_service.create_case(db=db, payload=payload, current_user=CurrentUser)
 
 
 @router.get(

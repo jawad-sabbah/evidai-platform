@@ -4,12 +4,10 @@ from uuid import UUID
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.core.config import settings
 from app.core.enums import CaseStatus
 from app.core.exceptions import (
     CaseConflictError,
     CaseNotFoundError,
-    ConfigurationError,
     InvalidCaseTransitionError,
 )
 from app.models.case import Case
@@ -39,16 +37,14 @@ class CaseService:
 
         return case
 
-    def create_case(self, db: Session, payload: CaseCreate) -> Case:
-        if settings.dev_user_id is None:
-            raise ConfigurationError("DEV_USER_ID is not configured")
+    def create_case(self, db: Session, payload: CaseCreate, created_by: UUID) -> Case:
 
         case = Case(
             case_number=self._generate_case_number(db),
             title=payload.title,
             description=payload.description,
             case_type=payload.case_type,
-            created_by=settings.dev_user_id,
+            created_by=created_by,
         )
 
         try:
@@ -57,7 +53,7 @@ class CaseService:
 
             case_member = CaseMember(
                 case_id=case.id,
-                user_id=settings.dev_user_id,
+                user_id=created_by,
                 case_role="OWNER",
             )
 
