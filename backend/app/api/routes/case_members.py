@@ -2,7 +2,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Response, status
 
-from app.api.dependencies import DbSession
+from app.api.dependencies import CurrentUser, DbSession
 from app.schemas.case_member import (
     CaseMemberCreate,
     CaseMemberResponse,
@@ -21,10 +21,7 @@ router = APIRouter(
     response_model=list[CaseMemberResponse],
     status_code=status.HTTP_200_OK,
 )
-def list_case_members(
-    case_id: UUID,
-    db: DbSession,
-):
+def list_case_members(case_id: UUID, db: DbSession, current_user: CurrentUser):
     return case_member_service.list_members(
         db=db,
         case_id=case_id,
@@ -37,9 +34,7 @@ def list_case_members(
     status_code=status.HTTP_201_CREATED,
 )
 def add_case_member(
-    case_id: UUID,
-    payload: CaseMemberCreate,
-    db: DbSession,
+    case_id: UUID, payload: CaseMemberCreate, db: DbSession, current_user: CurrentUser
 ):
     return case_member_service.add_member(
         db=db,
@@ -58,6 +53,7 @@ def update_case_member(
     member_id: UUID,
     payload: CaseMemberUpdate,
     db: DbSession,
+    current_user: CurrentUser,
 ):
     return case_member_service.update_member(
         db=db,
@@ -72,9 +68,7 @@ def update_case_member(
     status_code=status.HTTP_204_NO_CONTENT,
 )
 def delete_case_member(
-    case_id: UUID,
-    member_id: UUID,
-    db: DbSession,
+    case_id: UUID, member_id: UUID, db: DbSession, current_user: CurrentUser
 ) -> Response:
     case_member_service.delete_member(
         db=db,

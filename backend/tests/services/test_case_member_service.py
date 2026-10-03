@@ -2,6 +2,7 @@ from uuid import uuid4
 
 import pytest
 
+from app.core.config import settings
 from app.core.enums import CaseRole, CaseType
 from app.core.exceptions import (
     CaseMemberAlreadyExistsError,
@@ -32,13 +33,17 @@ def create_user(db_session, email: str) -> User:
     return user
 
 
-def create_case(db_session, title: str = "Case Member Service Test"):
+def create_case(
+    db_session,
+    title: str = "Case Member Service Test",
+):
     return case_service.create_case(
         db=db_session,
         payload=CaseCreate(
             title=title,
             case_type=CaseType.FRAUD,
         ),
+        created_by=settings.dev_user_id,
     )
 
 

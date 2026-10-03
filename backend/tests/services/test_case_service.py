@@ -2,6 +2,7 @@ from uuid import uuid4
 
 import pytest
 
+from app.core.config import settings
 from app.core.enums import CaseStatus, CaseType
 from app.core.exceptions import (
     CaseNotFoundError,
@@ -11,16 +12,29 @@ from app.schemas.case import CaseCreate, CaseUpdate
 from app.services.case_service import case_service
 
 
+def create_case(
+    db_session,
+    title: str,
+    case_type: CaseType = CaseType.OTHER,
+    description: str | None = None,
+):
+    return case_service.create_case(
+        db=db_session,
+        payload=CaseCreate(
+            title=title,
+            description=description,
+            case_type=case_type,
+        ),
+        created_by=settings.dev_user_id,
+    )
+
+
 def test_create_case(db_session):
-    payload = CaseCreate(
+    case = create_case(
+        db_session,
         title="Service Test Case",
         description="Created from service test",
         case_type=CaseType.FRAUD,
-    )
-
-    case = case_service.create_case(
-        db=db_session,
-        payload=payload,
     )
 
     assert case.id is not None
@@ -43,14 +57,9 @@ def test_create_case(db_session):
 
 
 def test_get_case(db_session):
-    payload = CaseCreate(
+    created_case = create_case(
+        db_session,
         title="Get Case Test",
-        case_type=CaseType.OTHER,
-    )
-
-    created_case = case_service.create_case(
-        db=db_session,
-        payload=payload,
     )
 
     case = case_service.get_case(
@@ -71,12 +80,9 @@ def test_get_case_not_found(db_session):
 
 
 def test_update_case_title(db_session):
-    case = case_service.create_case(
-        db=db_session,
-        payload=CaseCreate(
-            title="Original Title",
-            case_type=CaseType.OTHER,
-        ),
+    case = create_case(
+        db_session,
+        title="Original Title",
     )
 
     updated_case = case_service.update_case(
@@ -91,12 +97,9 @@ def test_update_case_title(db_session):
 
 
 def test_open_case_can_move_to_in_review(db_session):
-    case = case_service.create_case(
-        db=db_session,
-        payload=CaseCreate(
-            title="Review Transition",
-            case_type=CaseType.OTHER,
-        ),
+    case = create_case(
+        db_session,
+        title="Review Transition",
     )
 
     updated_case = case_service.update_case(
@@ -111,12 +114,9 @@ def test_open_case_can_move_to_in_review(db_session):
 
 
 def test_in_review_case_can_close(db_session):
-    case = case_service.create_case(
-        db=db_session,
-        payload=CaseCreate(
-            title="Close Transition",
-            case_type=CaseType.OTHER,
-        ),
+    case = create_case(
+        db_session,
+        title="Close Transition",
     )
 
     case_service.update_case(
@@ -140,12 +140,9 @@ def test_in_review_case_can_close(db_session):
 
 
 def test_closed_case_can_archive(db_session):
-    case = case_service.create_case(
-        db=db_session,
-        payload=CaseCreate(
-            title="Archive Transition",
-            case_type=CaseType.OTHER,
-        ),
+    case = create_case(
+        db_session,
+        title="Archive Transition",
     )
 
     case_service.update_case(
@@ -168,12 +165,9 @@ def test_closed_case_can_archive(db_session):
 
 
 def test_archived_case_cannot_reopen(db_session):
-    case = case_service.create_case(
-        db=db_session,
-        payload=CaseCreate(
-            title="Invalid Transition",
-            case_type=CaseType.OTHER,
-        ),
+    case = create_case(
+        db_session,
+        title="Invalid Transition",
     )
 
     case_service.update_case(
@@ -203,12 +197,9 @@ def test_archived_case_cannot_reopen(db_session):
 
 
 def test_case_number_format(db_session):
-    case = case_service.create_case(
-        db=db_session,
-        payload=CaseCreate(
-            title="Case Number Test",
-            case_type=CaseType.OTHER,
-        ),
+    case = create_case(
+        db_session,
+        title="Case Number Test",
     )
 
     parts = case.case_number.split("-")

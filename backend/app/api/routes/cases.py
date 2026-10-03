@@ -2,7 +2,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, status
 
-from app.api.dependencies import DbSession
+from app.api.dependencies import CurrentUser, DbSession
 from app.schemas.case import CaseCreate, CaseResponse, CaseUpdate
 from app.services.case_service import case_service
 
@@ -17,7 +17,7 @@ router = APIRouter(
     response_model=list[CaseResponse],
     status_code=status.HTTP_200_OK,
 )
-def list_cases(db: DbSession):
+def list_cases(db: DbSession, current_user: CurrentUser):
     return case_service.list_cases(db)
 
 
@@ -26,14 +26,8 @@ def list_cases(db: DbSession):
     response_model=CaseResponse,
     status_code=status.HTTP_201_CREATED,
 )
-def create_case(
-    payload: CaseCreate,
-    db: DbSession,
-):
-    return case_service.create_case(
-        db=db,
-        payload=payload,
-    )
+def create_case(payload: CaseCreate, db: DbSession, current_user: CurrentUser):
+    return case_service.create_case(db=db, payload=payload, created_by=current_user.id)
 
 
 @router.get(
@@ -41,10 +35,7 @@ def create_case(
     response_model=CaseResponse,
     status_code=status.HTTP_200_OK,
 )
-def get_case(
-    case_id: UUID,
-    db: DbSession,
-):
+def get_case(case_id: UUID, db: DbSession, current_user: CurrentUser):
     return case_service.get_case(
         db=db,
         case_id=case_id,
@@ -57,9 +48,7 @@ def get_case(
     status_code=status.HTTP_200_OK,
 )
 def update_case(
-    case_id: UUID,
-    payload: CaseUpdate,
-    db: DbSession,
+    case_id: UUID, payload: CaseUpdate, db: DbSession, current_user: CurrentUser
 ):
     return case_service.update_case(
         db=db,
