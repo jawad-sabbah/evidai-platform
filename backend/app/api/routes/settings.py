@@ -55,7 +55,7 @@ def get_notification_preferences(
     db: DbSession,
     current_user: CurrentUser,
 ):
-    preferences = notification_preference_service.get_preferences(
+    preferences = notification_preference_service.get_or_create_preferences(
         db=db,
         user_id=current_user.id,
     )
