@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, StrictBool
 
 from app.core.enums import AIResponseStyle, DefaultLandingPage, Theme
 
@@ -28,8 +28,8 @@ class PreferencesResponse(BaseModel):
 
 class AIInvestigatorPreferencesUpdate(BaseModel):
     ai_response_style: AIResponseStyle | None = None
-    ai_show_citations: bool | None = None
-    ai_show_confidence: bool | None = None
+    ai_show_citations: StrictBool | None = None  ##Strict bool only acc true,false
+    ai_show_confidence: StrictBool | None = None
 
 
 class AIInvestigatorPreferencesResponse(BaseModel):

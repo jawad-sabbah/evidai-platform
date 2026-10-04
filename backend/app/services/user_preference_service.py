@@ -6,7 +6,10 @@ from app.models.user_preference import UserPreference
 from app.repositories.user_preference_repository import (
     user_preference_repository,
 )
-from app.schemas.user_preference import PreferencesUpdate
+from app.schemas.user_preference import (
+    AIInvestigatorPreferencesUpdate,
+    PreferencesUpdate,
+)
 
 
 class UserPreferenceService:
@@ -54,6 +57,42 @@ class UserPreferenceService:
             setattr(preference, field, value)
 
         preference = user_preference_repository.update(
+            db=db,
+            preference=preference,
+        )
+
+        db.commit()
+        db.refresh(preference)
+
+        return preference
+
+    def get_ai_preferences(
+        self,
+        db: Session,
+        user_id: UUID,
+    ) -> UserPreference:
+        return self.get_or_create_preferences(
+            db=db,
+            user_id=user_id,
+        )
+
+    def update_ai_preferences(
+        self,
+        db: Session,
+        user_id: UUID,
+        payload: AIInvestigatorPreferencesUpdate,
+    ) -> UserPreference:
+        preference = self.get_or_create_preferences(
+            db=db,
+            user_id=user_id,
+        )
+
+        update_data = payload.model_dump(exclude_unset=True)
+
+        for field, value in update_data.items():
+            setattr(preference, field, value)
+
+        user_preference_repository.update(
             db=db,
             preference=preference,
         )
