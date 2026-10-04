@@ -5,6 +5,7 @@ from app.schemas.notification_preference import (
     NotificationPreferenceResponse,
     NotificationPreferenceUpdate,
 )
+from app.schemas.profile import ProfileResponse
 from app.schemas.user_preference import (
     AIInvestigatorPreferencesResponse,
     AIInvestigatorPreferencesUpdate,
@@ -12,6 +13,7 @@ from app.schemas.user_preference import (
     PreferencesUpdate,
 )
 from app.services.notification_preference_service import notification_preference_service
+from app.services.profile_service import profile_service
 from app.services.user_preference_service import user_preference_service
 
 router = APIRouter(prefix="/settings", tags=["settings"])
@@ -115,4 +117,19 @@ def update_ai_preferences(
         db=db,
         user_id=current_user.id,
         payload=payload,
+    )
+
+
+@router.get(
+    "/profile",
+    response_model=ProfileResponse,
+    status_code=status.HTTP_200_OK,
+)
+def get_profile(
+    db: DbSession,
+    current_user: CurrentUser,
+):
+    return profile_service.get_current_user_profile(
+        db=db,
+        user_id=current_user.id,
     )
