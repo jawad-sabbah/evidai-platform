@@ -42,5 +42,9 @@ class InvalidCredentialsError(Exception):
     pass
 
 
+class InvalidCurrentPasswordError(Exception):
+    pass
+
+
 class ForbiddenError(Exception):
     pass

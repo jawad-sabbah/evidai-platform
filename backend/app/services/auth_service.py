@@ -1,6 +1,10 @@
 from sqlalchemy.orm import Session
 
-from app.core.exceptions import EmailAlreadyExistsError, InvalidCredentialsError
+from app.core.exceptions import (
+    EmailAlreadyExistsError,
+    InvalidCredentialsError,
+    InvalidCurrentPasswordError,
+)
 from app.core.security import create_access_token, hash_password, verify_password
 from app.models.user import User
 from app.repositories.user_repository import UserRepository
@@ -71,6 +75,28 @@ class AuthService:
             raise InvalidCredentialsError("User account is disabled")
 
         return create_access_token(user.id)
+
+    def change_password(
+        self,
+        db: Session,
+        user: User,
+        current_password: str,
+        new_password: str,
+    ) -> None:
+        if not verify_password(
+            current_password,
+            user.password_hash,
+        ):
+            raise InvalidCurrentPasswordError("Current password is incorrect")
+
+        user.password_hash = hash_password(new_password)
+
+        try:
+            db.commit()
+            db.refresh(user)
+        except Exception:
+            db.rollback()
+            raise
 
 
 auth_service = AuthService(

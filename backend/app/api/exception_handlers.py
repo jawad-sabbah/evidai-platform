@@ -11,6 +11,7 @@ from app.core.exceptions import (
     ForbiddenError,
     InvalidCaseTransitionError,
     InvalidCredentialsError,
+    InvalidCurrentPasswordError,
     InvalidTokenError,
     LastOwnerError,
     UserNotFoundError,
@@ -139,5 +140,15 @@ def register_exception_handlers(app: FastAPI) -> None:
     ) -> JSONResponse:
         return JSONResponse(
             status_code=status.HTTP_403_FORBIDDEN,
+            content={"detail": str(exc)},
+        )
+
+    @app.exception_handler(InvalidCurrentPasswordError)
+    async def invalid_current_password_handler(
+        request: Request,
+        exc: InvalidCurrentPasswordError,
+    ) -> JSONResponse:
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
             content={"detail": str(exc)},
         )
