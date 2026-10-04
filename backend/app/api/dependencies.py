@@ -6,8 +6,12 @@ from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
-from app.core.enums import CaseRole, SystemRole
-from app.core.exceptions import ForbiddenError, InvalidTokenError
+from app.core.enums import CaseRole, SystemRole, UserStatus
+from app.core.exceptions import (
+    DisabledUserError,
+    ForbiddenError,
+    InvalidTokenError,
+)
 from app.core.security import decode_access_token
 from app.db.session import SessionLocal
 from app.models.user import User
@@ -58,6 +62,10 @@ def get_current_user(
 
     if user is None:
         raise InvalidTokenError("User not found")
+
+    ##handel the disabled users
+    if user.status == UserStatus.DISABLED.value:
+        raise DisabledUserError("User account is disabled")
 
     return user
 
