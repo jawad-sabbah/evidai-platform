@@ -7,6 +7,7 @@ from app.schemas.notification_preference import (
 )
 from app.schemas.user_preference import (
     AIInvestigatorPreferencesResponse,
+    AIInvestigatorPreferencesUpdate,
     PreferencesResponse,
     PreferencesUpdate,
 )
@@ -98,3 +99,20 @@ def get_ai_preferences(
         user_id=current_user.id,
     )
     return preferences
+
+
+@router.patch(
+    "/ai",
+    response_model=AIInvestigatorPreferencesResponse,
+    status_code=status.HTTP_200_OK,
+)
+def update_ai_preferences(
+    payload: AIInvestigatorPreferencesUpdate,
+    db: DbSession,
+    current_user: CurrentUser,
+):
+    return user_preference_service.update_ai_preferences(
+        db=db,
+        user_id=current_user.id,
+        payload=payload,
+    )
