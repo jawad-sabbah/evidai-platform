@@ -31,7 +31,7 @@ with engine.begin() as connection:
             VALUES (
                 :id,
                 'CI Development User',
-                'ci-dev@evidai.local',
+                'ci-dev@evidai.com',
                 'CI_ONLY',
                 'ADMIN',
                 'ACTIVE'
