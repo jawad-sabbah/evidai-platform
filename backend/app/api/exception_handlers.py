@@ -7,6 +7,7 @@ from app.core.exceptions import (
     CaseMemberNotFoundError,
     CaseNotFoundError,
     ConfigurationError,
+    DisabledUserError,
     EmailAlreadyExistsError,
     ForbiddenError,
     InvalidCaseTransitionError,
@@ -150,5 +151,15 @@ def register_exception_handlers(app: FastAPI) -> None:
     ) -> JSONResponse:
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
+            content={"detail": str(exc)},
+        )
+
+    @app.exception_handler(DisabledUserError)
+    async def disabled_user_handler(
+        request: Request,
+        exc: DisabledUserError,
+    ) -> JSONResponse:
+        return JSONResponse(
+            status_code=status.HTTP_403_FORBIDDEN,
             content={"detail": str(exc)},
         )

@@ -48,3 +48,7 @@ class InvalidCurrentPasswordError(Exception):
 
 class ForbiddenError(Exception):
     pass
+
+
+class DisabledUserError(Exception):
+    pass
