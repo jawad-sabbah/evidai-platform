@@ -38,3 +38,22 @@ class SystemRole(StrEnum):
 class UserStatus(StrEnum):
     ACTIVE = "ACTIVE"
     DISABLED = "DISABLED"
+
+
+class Theme(StrEnum):
+    LIGHT = "LIGHT"
+    DARK = "DARK"
+    SYSTEM = "SYSTEM"
+
+
+class DefaultLandingPage(StrEnum):
+    DASHBOARD = "DASHBOARD"
+    CASES = "CASES"
+    EVIDENCE = "EVIDENCE"
+    AI_INVESTIGATOR = "AI_INVESTIGATOR"
+
+
+class AIResponseStyle(StrEnum):
+    CONCISE = "CONCISE"
+    BALANCED = "BALANCED"
+    DETAILED = "DETAILED"
