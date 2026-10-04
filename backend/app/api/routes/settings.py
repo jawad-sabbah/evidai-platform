@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, status
 
 from app.api.dependencies import CurrentUser, DbSession
 from app.schemas.user_preference import PreferencesResponse, PreferencesUpdate
@@ -16,17 +16,10 @@ def get_preferences(
     db: DbSession,
     current_user: CurrentUser,
 ):
-    preferences = user_preference_service.get_preferences(
+    preferences = user_preference_service.get_or_create_preferences(
         db=db,
         user_id=current_user.id,
     )
-
-    if preferences is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User preferences not found",
-        )
-
     return preferences
 
 
@@ -45,11 +38,4 @@ def update_preferences(
         user_id=current_user.id,
         payload=payload,
     )
-
-    if preferences is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User preferences not found",
-        )
-
     return preferences

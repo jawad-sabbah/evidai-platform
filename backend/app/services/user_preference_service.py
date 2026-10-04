@@ -10,29 +10,43 @@ from app.schemas.user_preference import PreferencesUpdate
 
 
 class UserPreferenceService:
-    def get_preferences(
+    def get_or_create_preferences(
         self,
         db: Session,
         user_id: UUID,
-    ) -> UserPreference | None:
-        return user_preference_repository.get_by_user_id(
+    ) -> UserPreference:
+        preference = user_preference_repository.get_by_user_id(
             db=db,
             user_id=user_id,
         )
+
+        if preference is not None:
+            return preference
+
+        preference = UserPreference(
+            user_id=user_id,
+        )
+
+        preference = user_preference_repository.create(
+            db=db,
+            preference=preference,
+        )
+
+        db.commit()
+        db.refresh(preference)
+
+        return preference
 
     def update_preferences(
         self,
         db: Session,
         user_id: UUID,
         payload: PreferencesUpdate,
-    ) -> UserPreference | None:
-        preference = user_preference_repository.get_by_user_id(
+    ) -> UserPreference:
+        preference = self.get_or_create_preferences(
             db=db,
             user_id=user_id,
         )
-
-        if preference is None:
-            return None
 
         update_data = payload.model_dump(exclude_unset=True)
 
