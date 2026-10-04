@@ -1,7 +1,10 @@
 from fastapi import APIRouter, HTTPException, status
 
 from app.api.dependencies import CurrentUser, DbSession
-from app.schemas.notification_preference import NotificationPreferenceResponse
+from app.schemas.notification_preference import (
+    NotificationPreferenceResponse,
+    NotificationPreferenceUpdate,
+)
 from app.schemas.user_preference import PreferencesResponse, PreferencesUpdate
 from app.services.notification_preference_service import notification_preference_service
 from app.services.user_preference_service import user_preference_service
@@ -55,6 +58,31 @@ def get_notification_preferences(
     preferences = notification_preference_service.get_preferences(
         db=db,
         user_id=current_user.id,
+    )
+
+    if preferences is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Notification preferences not found",
+        )
+
+    return preferences
+
+
+@router.patch(
+    "/notifications",
+    response_model=NotificationPreferenceResponse,
+    status_code=status.HTTP_200_OK,
+)
+def update_notification_preferences(
+    payload: NotificationPreferenceUpdate,
+    db: DbSession,
+    current_user: CurrentUser,
+):
+    preferences = notification_preference_service.update_preferences(
+        db=db,
+        user_id=current_user.id,
+        payload=payload,
     )
 
     if preferences is None:
