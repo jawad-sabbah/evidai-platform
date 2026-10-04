@@ -10,29 +10,43 @@ from app.schemas.notification_preference import NotificationPreferenceUpdate
 
 
 class NotificationPreferenceService:
-    def get_preferences(
+    def get_or_create_preferences(
         self,
         db: Session,
         user_id: UUID,
-    ) -> NotificationPreference | None:
-        return notification_preference_repository.get_by_user_id(
+    ) -> NotificationPreference:
+        preference = notification_preference_repository.get_by_user_id(
             db=db,
             user_id=user_id,
         )
+
+        if preference is not None:
+            return preference
+
+        preference = NotificationPreference(
+            user_id=user_id,
+        )
+
+        notification_preference_repository.create(
+            db=db,
+            preference=preference,
+        )
+
+        db.commit()
+        db.refresh(preference)
+
+        return preference
 
     def update_preferences(
         self,
         db: Session,
         user_id: UUID,
         payload: NotificationPreferenceUpdate,
-    ) -> NotificationPreference | None:
-        preference = notification_preference_repository.get_by_user_id(
+    ) -> NotificationPreference:
+        preference = self.get_or_create_preferences(
             db=db,
             user_id=user_id,
         )
-
-        if preference is None:
-            return None
 
         update_data = payload.model_dump(exclude_unset=True)
 
