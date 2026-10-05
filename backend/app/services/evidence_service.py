@@ -5,7 +5,7 @@ from fastapi import UploadFile
 from sqlalchemy.orm import Session
 
 from app.core.enums import EvidenceProcessingStatus
-from app.core.exceptions import EvidenceUploadError
+from app.core.exceptions import EvidenceNotFoundError, EvidenceUploadError
 from app.models.evidence import Evidence
 from app.models.processing_job import ProcessingJob
 from app.repositories.evidence_repository import evidence_repository
@@ -78,6 +78,39 @@ class EvidenceService:
             local_storage_service.delete(stored_file.storage_key)
 
             raise
+
+    def get_evidence_by_id(
+        self,
+        db: Session,
+        case_id: UUID,
+        evidence_id: UUID,
+    ) -> Evidence:
+        evidence = evidence_repository.get_by_id_and_case_id(
+            db=db,
+            evidence_id=evidence_id,
+            case_id=case_id,
+        )
+
+        if evidence is None:
+            raise EvidenceNotFoundError("Evidence not found")
+
+        return evidence
+
+    def get_evidence_by_case(
+        self,
+        db: Session,
+        case_id: UUID,
+        limit: int = 50,
+        offset: int = 0,
+        processing_status: str | None = None,
+    ) -> list[Evidence]:
+        return evidence_repository.list_by_case_id(
+            db=db,
+            case_id=case_id,
+            limit=limit,
+            offset=offset,
+            processing_status=processing_status,
+        )
 
 
 evidence_service = EvidenceService()

@@ -1,12 +1,14 @@
-from uuid import UUID
+from uuid import UUID, uuid4
 
 import pytest
 from sqlalchemy import select
 
 from app.core.config import settings
 from app.core.enums import CaseType
+from app.core.security import create_access_token
 from app.models.evidence import Evidence
 from app.models.processing_job import ProcessingJob
+from app.models.user import User
 from app.schemas.case import CaseCreate
 from app.services.case_service import case_service
 from app.services.storage_service import local_storage_service
@@ -31,6 +33,30 @@ def use_test_storage(tmp_path, monkeypatch):
         "base_dir",
         tmp_path / "evidence",
     )
+
+
+def upload_test_evidence(
+    client,
+    auth_headers,
+    case_id,
+    filename="report.txt",
+    content=b"Evidence content",
+):
+    response = client.post(
+        f"/cases/{case_id}/evidence",
+        headers=auth_headers,
+        files={
+            "file": (
+                filename,
+                content,
+                "text/plain",
+            )
+        },
+    )
+
+    assert response.status_code == 201
+
+    return response.json()
 
 
 def test_upload_evidence_success(
@@ -155,9 +181,6 @@ def test_non_member_cannot_upload_evidence(
     db_session,
     evidence_case,
 ):
-    from app.core.security import create_access_token
-    from app.models.user import User
-
     user = User(
         full_name="Evidence Non Member",
         email="evidence-non-member@example.com",
@@ -189,3 +212,177 @@ def test_non_member_cannot_upload_evidence(
 
     assert response.status_code == 403
     assert response.json()["detail"] == "You are not a member of this case"
+
+
+def test_get_evidence_by_id(
+    client,
+    auth_headers,
+    evidence_case,
+):
+    uploaded = upload_test_evidence(
+        client,
+        auth_headers,
+        evidence_case.id,
+    )
+
+    response = client.get(
+        f"/cases/{evidence_case.id}/evidence/{uploaded['id']}",
+        headers=auth_headers,
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["id"] == uploaded["id"]
+    assert data["case_id"] == str(evidence_case.id)
+    assert data["original_filename"] == "report.txt"
+    assert data["processing_status"] == "QUEUED"
+
+
+def test_get_evidence_by_case(
+    client,
+    auth_headers,
+    evidence_case,
+):
+    first = upload_test_evidence(
+        client,
+        auth_headers,
+        evidence_case.id,
+        filename="first.txt",
+    )
+
+    second = upload_test_evidence(
+        client,
+        auth_headers,
+        evidence_case.id,
+        filename="second.txt",
+    )
+
+    response = client.get(
+        f"/cases/{evidence_case.id}/evidence",
+        headers=auth_headers,
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    ids = {item["id"] for item in data}
+
+    assert first["id"] in ids
+    assert second["id"] in ids
+
+
+def test_get_evidence_by_id_not_found(
+    client,
+    auth_headers,
+    evidence_case,
+):
+    response = client.get(
+        f"/cases/{evidence_case.id}/evidence/{uuid4()}",
+        headers=auth_headers,
+    )
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Evidence not found"
+
+
+def test_get_evidence_with_invalid_processing_status(
+    client,
+    auth_headers,
+    evidence_case,
+):
+    response = client.get(
+        f"/cases/{evidence_case.id}/evidence",
+        headers=auth_headers,
+        params={
+            "processing_status": "INVALID",
+        },
+    )
+
+    assert response.status_code == 422
+
+
+def test_get_evidence_filters_by_processing_status(
+    client,
+    auth_headers,
+    evidence_case,
+):
+    uploaded = upload_test_evidence(
+        client,
+        auth_headers,
+        evidence_case.id,
+    )
+
+    response = client.get(
+        f"/cases/{evidence_case.id}/evidence",
+        headers=auth_headers,
+        params={
+            "processing_status": "QUEUED",
+        },
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert any(item["id"] == uploaded["id"] for item in data)
+
+    assert all(item["processing_status"] == "QUEUED" for item in data)
+
+
+def test_get_evidence_pagination(
+    client,
+    auth_headers,
+    evidence_case,
+):
+    for index in range(3):
+        upload_test_evidence(
+            client,
+            auth_headers,
+            evidence_case.id,
+            filename=f"document-{index}.txt",
+        )
+
+    response = client.get(
+        f"/cases/{evidence_case.id}/evidence",
+        headers=auth_headers,
+        params={
+            "limit": 2,
+            "offset": 0,
+        },
+    )
+
+    assert response.status_code == 200
+    assert len(response.json()) == 2
+
+
+def test_evidence_from_another_case_returns_not_found(
+    client,
+    db_session,
+    auth_headers,
+    evidence_case,
+):
+    other_case = case_service.create_case(
+        db=db_session,
+        payload=CaseCreate(
+            title="Other Evidence Case",
+            case_type=CaseType.OTHER,
+        ),
+        created_by=settings.dev_user_id,
+    )
+
+    uploaded = upload_test_evidence(
+        client,
+        auth_headers,
+        other_case.id,
+    )
+
+    response = client.get(
+        f"/cases/{evidence_case.id}/evidence/{uploaded['id']}",
+        headers=auth_headers,
+    )
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Evidence not found"

@@ -60,3 +60,7 @@ class EvidenceUploadError(Exception):
 
 class InvalidEvidenceFileError(Exception):
     """Raised when an uploaded evidence file is invalid."""
+
+
+class EvidenceNotFoundError(Exception):
+    """Raised when evidence cannot be found in the requested case."""
