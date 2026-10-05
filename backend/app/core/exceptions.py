@@ -52,3 +52,11 @@ class ForbiddenError(Exception):
 
 class DisabledUserError(Exception):
     pass
+
+
+class EvidenceUploadError(Exception):
+    """Raised when an evidence file cannot be uploaded or stored."""
+
+
+class InvalidEvidenceFileError(Exception):
+    """Raised when an uploaded evidence file is invalid."""

@@ -57,3 +57,19 @@ class AIResponseStyle(StrEnum):
     CONCISE = "CONCISE"
     BALANCED = "BALANCED"
     DETAILED = "DETAILED"
+
+
+class EvidenceProcessingStatus(StrEnum):
+    UPLOADED = "UPLOADED"
+    QUEUED = "QUEUED"
+    PROCESSING = "PROCESSING"
+    READY = "READY"
+    FAILED = "FAILED"
+
+
+class ProcessingJobStatus(StrEnum):
+    QUEUED = "QUEUED"
+    RUNNING = "RUNNING"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+    CANCELLED = "CANCELLED"
