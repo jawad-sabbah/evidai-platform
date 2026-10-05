@@ -67,5 +67,13 @@ class EvidenceRepository:
 
         return evidence
 
+    def delete(
+        self,
+        db: Session,
+        evidence: Evidence,
+    ) -> None:
+        db.delete(evidence)
+        db.flush()
+
 
 evidence_repository = EvidenceRepository()

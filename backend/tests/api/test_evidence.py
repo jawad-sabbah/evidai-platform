@@ -1,3 +1,4 @@
+from pathlib import Path
 from uuid import UUID, uuid4
 
 import pytest
@@ -386,3 +387,172 @@ def test_evidence_from_another_case_returns_not_found(
 
     assert response.status_code == 404
     assert response.json()["detail"] == "Evidence not found"
+
+
+def test_owner_can_delete_evidence(
+    client,
+    db_session,
+    auth_headers,
+    evidence_case,
+):
+    uploaded = upload_test_evidence(
+        client,
+        auth_headers,
+        evidence_case.id,
+    )
+
+    evidence_id = UUID(uploaded["id"])
+
+    response = client.delete(
+        f"/cases/{evidence_case.id}/evidence/{evidence_id}",
+        headers=auth_headers,
+    )
+
+    assert response.status_code == 204
+
+    evidence = db_session.get(Evidence, evidence_id)
+
+    assert evidence is None
+
+
+def test_delete_evidence_removes_physical_file(
+    client,
+    db_session,
+    auth_headers,
+    evidence_case,
+):
+    uploaded = upload_test_evidence(
+        client,
+        auth_headers,
+        evidence_case.id,
+    )
+
+    evidence_id = UUID(uploaded["id"])
+
+    evidence = db_session.get(Evidence, evidence_id)
+
+    assert evidence is not None
+
+    storage_path = Path(evidence.storage_key)
+
+    assert storage_path.exists()
+
+    response = client.delete(
+        f"/cases/{evidence_case.id}/evidence/{evidence_id}",
+        headers=auth_headers,
+    )
+
+    assert response.status_code == 204
+    assert not storage_path.exists()
+
+
+def test_delete_evidence_cascades_processing_job(
+    client,
+    db_session,
+    auth_headers,
+    evidence_case,
+):
+    uploaded = upload_test_evidence(
+        client,
+        auth_headers,
+        evidence_case.id,
+    )
+
+    evidence_id = UUID(uploaded["id"])
+
+    statement = select(ProcessingJob).where(ProcessingJob.evidence_id == evidence_id)
+
+    processing_job = db_session.scalar(statement)
+
+    assert processing_job is not None
+
+    response = client.delete(
+        f"/cases/{evidence_case.id}/evidence/{evidence_id}",
+        headers=auth_headers,
+    )
+
+    assert response.status_code == 204
+
+    db_session.expire_all()
+
+    processing_job = db_session.scalar(statement)
+
+    assert processing_job is None
+
+
+def test_delete_evidence_not_found(
+    client,
+    auth_headers,
+    evidence_case,
+):
+    response = client.delete(
+        f"/cases/{evidence_case.id}/evidence/{uuid4()}",
+        headers=auth_headers,
+    )
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Evidence not found"
+
+
+def test_delete_running_evidence_returns_conflict(
+    client,
+    db_session,
+    auth_headers,
+    evidence_case,
+):
+    uploaded = upload_test_evidence(
+        client,
+        auth_headers,
+        evidence_case.id,
+    )
+
+    evidence_id = UUID(uploaded["id"])
+
+    statement = select(ProcessingJob).where(ProcessingJob.evidence_id == evidence_id)
+
+    processing_job = db_session.scalar(statement)
+
+    assert processing_job is not None
+
+    processing_job.status = "RUNNING"
+    db_session.flush()
+
+    response = client.delete(
+        f"/cases/{evidence_case.id}/evidence/{evidence_id}",
+        headers=auth_headers,
+    )
+
+    assert response.status_code == 409
+    assert (
+        response.json()["detail"]
+        == "Evidence cannot be deleted while processing is running"
+    )
+
+    assert db_session.get(Evidence, evidence_id) is not None
+
+
+def test_non_owner_cannot_delete_evidence(
+    client,
+    db_session,
+    auth_headers,
+    evidence_case,
+):
+    upload_test_evidence(
+        client,
+        auth_headers,
+        evidence_case.id,
+    )
+
+    user = User(
+        full_name="Evidence Case Member",
+        email="evidence-member@example.com",
+        password_hash="TEST_ONLY",
+        system_role="USER",
+        status="ACTIVE",
+    )
+
+    db_session.add(user)
+    db_session.flush()
+
+    # Add this user as a non-owner case member using your existing
+    # CaseMember service/repository before making the DELETE request.
