@@ -9,10 +9,12 @@ from app.core.exceptions import (
     ConfigurationError,
     DisabledUserError,
     EmailAlreadyExistsError,
+    EvidenceUploadError,
     ForbiddenError,
     InvalidCaseTransitionError,
     InvalidCredentialsError,
     InvalidCurrentPasswordError,
+    InvalidEvidenceFileError,
     InvalidTokenError,
     LastOwnerError,
     UserNotFoundError,
@@ -161,5 +163,25 @@ def register_exception_handlers(app: FastAPI) -> None:
     ) -> JSONResponse:
         return JSONResponse(
             status_code=status.HTTP_403_FORBIDDEN,
+            content={"detail": str(exc)},
+        )
+
+    @app.exception_handler(InvalidEvidenceFileError)
+    async def invalid_evidence_file_handler(
+        request: Request,
+        exc: InvalidEvidenceFileError,
+    ) -> JSONResponse:
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"detail": str(exc)},
+        )
+
+    @app.exception_handler(EvidenceUploadError)
+    async def evidence_upload_error_handler(
+        request: Request,
+        exc: EvidenceUploadError,
+    ) -> JSONResponse:
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"detail": str(exc)},
         )

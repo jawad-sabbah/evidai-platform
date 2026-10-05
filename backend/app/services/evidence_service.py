@@ -5,6 +5,7 @@ from fastapi import UploadFile
 from sqlalchemy.orm import Session
 
 from app.core.enums import EvidenceProcessingStatus
+from app.core.exceptions import EvidenceUploadError
 from app.models.evidence import Evidence
 from app.models.processing_job import ProcessingJob
 from app.repositories.evidence_repository import evidence_repository
@@ -25,11 +26,14 @@ class EvidenceService:
     ) -> Evidence:
         evidence_id = uuid4()
 
-        stored_file = local_storage_service.save(
-            file=file,
-            case_id=case_id,
-            evidence_id=evidence_id,
-        )
+        try:
+            stored_file = local_storage_service.save(
+                file=file,
+                case_id=case_id,
+                evidence_id=evidence_id,
+            )
+        except OSError as exc:
+            raise EvidenceUploadError("Failed to store evidence file") from exc
 
         evidence = Evidence(
             id=evidence_id,
