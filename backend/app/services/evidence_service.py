@@ -112,5 +112,27 @@ class EvidenceService:
             processing_status=processing_status,
         )
 
+    def delete_evidence(
+        self,
+        db: Session,
+        case_id: UUID,
+        evidence_id: UUID,
+    ) -> None:
+        evidence = evidence_repository.get_by_id_and_case_id(
+            db=db,
+            evidence_id=evidence_id,
+            case_id=case_id,
+        )
+
+        if evidence is None:
+            raise EvidenceNotFoundError("Evidence not found")
+
+        evidence_repository.delete(
+            db=db,
+            evidence=evidence,
+        )
+
+        db.commit()
+
 
 evidence_service = EvidenceService()
