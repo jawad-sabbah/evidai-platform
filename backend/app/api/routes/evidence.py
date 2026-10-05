@@ -36,3 +36,20 @@ def upload_evidence(
         source_type=source_type,
         description=description,
     )
+
+
+@router.get(
+    "/{evidence_id}",
+    response_model=EvidenceResponse,
+    status_code=status.HTTP_200_OK,
+)
+def get_evidence_by_id(
+    case_id: UUID,
+    evidence_id: UUID,
+    db: DbSession,
+    current_user: CaseMemberUser,
+) -> EvidenceResponse:
+    return evidence_service.get_evidence_by_id(
+        db=db,
+        evidence_id=evidence_id,
+    )

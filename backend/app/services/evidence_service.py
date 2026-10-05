@@ -79,5 +79,15 @@ class EvidenceService:
 
             raise
 
+    def get_evidence_by_id(
+        self,
+        db: Session,
+        evidence_id: UUID,
+    ) -> Evidence | None:
+        return evidence_repository.get_by_id(
+            db=db,
+            evidence_id=evidence_id,
+        )
+
 
 evidence_service = EvidenceService()
