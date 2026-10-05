@@ -89,5 +89,15 @@ class EvidenceService:
             evidence_id=evidence_id,
         )
 
+    def get_evidence_by_case(
+        self,
+        db: Session,
+        case_id: UUID,
+    ) -> list[Evidence]:
+        return evidence_repository.list_by_case_id(
+            db=db,
+            case_id=case_id,
+        )
+
 
 evidence_service = EvidenceService()

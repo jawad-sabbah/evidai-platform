@@ -53,3 +53,19 @@ def get_evidence_by_id(
         db=db,
         evidence_id=evidence_id,
     )
+
+
+@router.get(
+    "",
+    response_model=list[EvidenceResponse],
+    status_code=status.HTTP_200_OK,
+)
+def get_evidence_by_case(
+    case_id: UUID,
+    db: DbSession,
+    current_user: CaseMemberUser,
+) -> list[EvidenceResponse]:
+    return evidence_service.get_evidence_by_case(
+        db=db,
+        case_id=case_id,
+    )
