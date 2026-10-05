@@ -3,7 +3,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, File, Form, Query, UploadFile, status
 
-from app.api.dependencies import CaseMemberUser, DbSession
+from app.api.dependencies import CaseMemberUser, CaseOwnerUser, DbSession
 from app.core.enums import EvidenceProcessingStatus
 from app.schemas.evidence import EvidenceResponse
 from app.services.evidence_service import evidence_service
@@ -81,4 +81,22 @@ def get_evidence_by_case(
         processing_status=(
             processing_status.value if processing_status is not None else None
         ),
+    )
+
+
+# only case owner can delete
+@router.delete(
+    "/{evidence_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def delete_evidence(
+    case_id: UUID,
+    evidence_id: UUID,
+    db: DbSession,
+    current_user: CaseOwnerUser,
+) -> None:
+    evidence_service.delete_evidence(
+        db=db,
+        case_id=case_id,
+        evidence_id=evidence_id,
     )

@@ -45,5 +45,17 @@ class ProcessingJobRepository:
 
         return processing_job
 
+    def get_running_by_evidence_id(
+        self,
+        db: Session,
+        evidence_id: UUID,
+    ) -> ProcessingJob | None:
+        statement = select(ProcessingJob).where(
+            ProcessingJob.evidence_id == evidence_id,
+            ProcessingJob.status == "RUNNING",
+        )
+
+        return db.scalar(statement)
+
 
 processing_job_repository = ProcessingJobRepository()

@@ -64,3 +64,7 @@ class InvalidEvidenceFileError(Exception):
 
 class EvidenceNotFoundError(Exception):
     """Raised when evidence cannot be found in the requested case."""
+
+
+class EvidenceProcessingError(Exception):
+    """Raised when evidence cannot be modified during active processing."""
