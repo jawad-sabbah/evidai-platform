@@ -33,6 +33,19 @@ class EvidenceRepository:
 
         return list(db.scalars(statement).all())
 
+    def get_by_id_and_case_id(
+        self,
+        db: Session,
+        evidence_id: UUID,
+        case_id: UUID,
+    ) -> Evidence | None:
+        statement = select(Evidence).where(
+            Evidence.id == evidence_id,
+            Evidence.case_id == case_id,
+        )
+
+        return db.scalar(statement)
+
     def create(
         self,
         db: Session,

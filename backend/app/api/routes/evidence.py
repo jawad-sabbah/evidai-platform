@@ -52,6 +52,7 @@ def get_evidence_by_id(
 ) -> EvidenceResponse:
     return evidence_service.get_evidence_by_id(
         db=db,
+        case_id=case_id,
         evidence_id=evidence_id,
     )
 

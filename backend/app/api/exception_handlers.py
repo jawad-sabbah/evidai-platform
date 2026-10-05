@@ -9,6 +9,7 @@ from app.core.exceptions import (
     ConfigurationError,
     DisabledUserError,
     EmailAlreadyExistsError,
+    EvidenceNotFoundError,
     EvidenceUploadError,
     ForbiddenError,
     InvalidCaseTransitionError,
@@ -183,5 +184,15 @@ def register_exception_handlers(app: FastAPI) -> None:
     ) -> JSONResponse:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"detail": str(exc)},
+        )
+
+    @app.exception_handler(EvidenceNotFoundError)
+    async def evidence_not_found_handler(
+        request: Request,
+        exc: EvidenceNotFoundError,
+    ) -> JSONResponse:
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
             content={"detail": str(exc)},
         )
