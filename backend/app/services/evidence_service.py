@@ -93,10 +93,16 @@ class EvidenceService:
         self,
         db: Session,
         case_id: UUID,
+        limit: int = 50,
+        offset: int = 0,
+        processing_status: str | None = None,
     ) -> list[Evidence]:
         return evidence_repository.list_by_case_id(
             db=db,
             case_id=case_id,
+            limit=limit,
+            offset=offset,
+            processing_status=processing_status,
         )
 
 

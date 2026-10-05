@@ -18,11 +18,17 @@ class EvidenceRepository:
         self,
         db: Session,
         case_id: UUID,
+        limit: int = 50,
+        offset: int = 0,
+        processing_status: str | None = None,
     ) -> list[Evidence]:
+        statement = select(Evidence).where(Evidence.case_id == case_id)
+
+        if processing_status is not None:
+            statement = statement.where(Evidence.processing_status == processing_status)
+
         statement = (
-            select(Evidence)
-            .where(Evidence.case_id == case_id)
-            .order_by(Evidence.created_at.desc())
+            statement.order_by(Evidence.created_at.desc()).offset(offset).limit(limit)
         )
 
         return list(db.scalars(statement).all())
