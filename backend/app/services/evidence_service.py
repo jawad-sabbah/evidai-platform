@@ -127,12 +127,19 @@ class EvidenceService:
         if evidence is None:
             raise EvidenceNotFoundError("Evidence not found")
 
-        evidence_repository.delete(
-            db=db,
-            evidence=evidence,
-        )
+        try:
+            local_storage_service.delete(evidence.storage_key)
 
-        db.commit()
+            evidence_repository.delete(
+                db=db,
+                evidence=evidence,
+            )
+
+            db.commit()
+
+        except Exception:
+            db.rollback()
+            raise
 
 
 evidence_service = EvidenceService()
