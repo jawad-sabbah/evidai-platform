@@ -5,7 +5,10 @@ from fastapi import APIRouter, File, Form, Query, UploadFile, status
 
 from app.api.dependencies import CaseMemberUser, CaseOwnerUser, DbSession
 from app.core.enums import EvidenceProcessingStatus
-from app.schemas.evidence import EvidenceResponse
+from app.schemas.evidence import (
+    EvidenceMetadataUpdate,
+    EvidenceResponse,
+)
 from app.services.evidence_service import evidence_service
 
 router = APIRouter(
@@ -81,6 +84,25 @@ def get_evidence_by_case(
         processing_status=(
             processing_status.value if processing_status is not None else None
         ),
+    )
+
+
+@router.patch(
+    "/{evidence_id}",
+    response_model=EvidenceResponse,
+)
+def update_evidence_metadata(
+    case_id: UUID,
+    evidence_id: UUID,
+    payload: EvidenceMetadataUpdate,
+    db: DbSession,
+    current_user: CaseMemberUser,
+) -> EvidenceResponse:
+    return evidence_service.update_metadata(
+        db=db,
+        case_id=case_id,
+        evidence_id=evidence_id,
+        payload=payload,
     )
 
 

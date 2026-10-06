@@ -556,3 +556,171 @@ def test_non_owner_cannot_delete_evidence(
 
     # Add this user as a non-owner case member using your existing
     # CaseMember service/repository before making the DELETE request.
+
+
+def test_update_evidence_display_name(
+    client,
+    auth_headers,
+    evidence_case,
+):
+    uploaded = upload_test_evidence(
+        client,
+        auth_headers,
+        evidence_case.id,
+    )
+
+    response = client.patch(
+        f"/cases/{evidence_case.id}/evidence/{uploaded['id']}",
+        headers=auth_headers,
+        json={"display_name": "Updated Evidence Name"},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["display_name"] == "Updated Evidence Name"
+
+
+def test_update_evidence_description(
+    client,
+    auth_headers,
+    evidence_case,
+):
+    uploaded = upload_test_evidence(
+        client,
+        auth_headers,
+        evidence_case.id,
+    )
+
+    response = client.patch(
+        f"/cases/{evidence_case.id}/evidence/{uploaded['id']}",
+        headers=auth_headers,
+        json={"description": "Updated evidence description"},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["description"] == "Updated evidence description"
+
+
+def test_update_evidence_source_type(
+    client,
+    auth_headers,
+    evidence_case,
+):
+    uploaded = upload_test_evidence(
+        client,
+        auth_headers,
+        evidence_case.id,
+    )
+
+    response = client.patch(
+        f"/cases/{evidence_case.id}/evidence/{uploaded['id']}",
+        headers=auth_headers,
+        json={"source_type": "UPLOAD"},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["source_type"] == "UPLOAD"
+
+
+def test_update_multiple_evidence_metadata_fields(
+    client,
+    auth_headers,
+    evidence_case,
+):
+    uploaded = upload_test_evidence(
+        client,
+        auth_headers,
+        evidence_case.id,
+    )
+
+    response = client.patch(
+        f"/cases/{evidence_case.id}/evidence/{uploaded['id']}",
+        headers=auth_headers,
+        json={
+            "display_name": "Bank Statement",
+            "description": "Statement provided by client",
+            "source_type": "UPLOAD",
+        },
+    )
+
+    assert response.status_code == 200
+
+    body = response.json()
+
+    assert body["display_name"] == "Bank Statement"
+    assert body["description"] == "Statement provided by client"
+    assert body["source_type"] == "UPLOAD"
+
+
+def test_update_evidence_metadata_not_found(
+    client,
+    auth_headers,
+    evidence_case,
+):
+    response = client.patch(
+        f"/cases/{evidence_case.id}/evidence/{uuid4()}",
+        headers=auth_headers,
+        json={"display_name": "Updated Name"},
+    )
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Evidence not found"
+
+
+def test_update_evidence_metadata_empty_payload(
+    client,
+    auth_headers,
+    evidence_case,
+):
+    uploaded = upload_test_evidence(
+        client,
+        auth_headers,
+        evidence_case.id,
+    )
+
+    response = client.patch(
+        f"/cases/{evidence_case.id}/evidence/{uploaded['id']}",
+        headers=auth_headers,
+        json={},
+    )
+
+    assert response.status_code == 422
+
+
+def test_update_evidence_empty_display_name(
+    client,
+    auth_headers,
+    evidence_case,
+):
+    uploaded = upload_test_evidence(
+        client,
+        auth_headers,
+        evidence_case.id,
+    )
+
+    response = client.patch(
+        f"/cases/{evidence_case.id}/evidence/{uploaded['id']}",
+        headers=auth_headers,
+        json={"display_name": ""},
+    )
+
+    assert response.status_code == 422
+
+
+def test_update_evidence_display_name_too_long(
+    client,
+    auth_headers,
+    evidence_case,
+):
+    uploaded = upload_test_evidence(
+        client,
+        auth_headers,
+        evidence_case.id,
+    )
+
+    response = client.patch(
+        f"/cases/{evidence_case.id}/evidence/{uploaded['id']}",
+        headers=auth_headers,
+        json={"display_name": "a" * 501},
+    )
+
+    assert response.status_code == 422
