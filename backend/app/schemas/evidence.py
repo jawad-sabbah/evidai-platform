@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from app.core.enums import EvidenceProcessingStatus
 
@@ -33,6 +33,17 @@ class EvidenceResponse(BaseModel):
 
 
 class EvidenceMetadataUpdate(BaseModel):
-    display_name: str | None = None
+    display_name: str | None = Field(
+        default=None,
+        min_length=1,
+        max_length=500,
+    )
     description: str | None = None
     source_type: str | None = None
+
+    @model_validator(mode="after")
+    def validate_at_least_one_field(self) -> "EvidenceMetadataUpdate":
+        if not self.model_fields_set:
+            raise ValueError("At least one metadata field must be provided")
+
+        return self
