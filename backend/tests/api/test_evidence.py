@@ -133,6 +133,14 @@ def test_upload_evidence_creates_processing_job(
 
     evidence_id = UUID(response.json()["id"])
 
+    evidence = db_session.get(
+        Evidence,
+        evidence_id,
+    )
+
+    assert evidence is not None
+    assert evidence.processing_status == "QUEUED"
+
     statement = select(ProcessingJob).where(ProcessingJob.evidence_id == evidence_id)
 
     processing_job = db_session.scalar(statement)
