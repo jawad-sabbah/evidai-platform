@@ -32,5 +32,6 @@ class EvidenceResponse(BaseModel):
     updated_at: datetime
 
 
-class EvidenceDisplayNameUpdate(BaseModel):
-    display_name: str | None
+class EvidenceMetadataUpdate(BaseModel):
+    display_name: str | None = None
+    description: str | None = None

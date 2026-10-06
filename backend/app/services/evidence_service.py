@@ -14,6 +14,7 @@ from app.models.evidence import Evidence
 from app.models.processing_job import ProcessingJob
 from app.repositories.evidence_repository import evidence_repository
 from app.repositories.processing_job_repository import processing_job_repository
+from app.schemas.evidence import EvidenceMetadataUpdate
 from app.services.storage_service import local_storage_service
 
 
@@ -116,12 +117,12 @@ class EvidenceService:
             processing_status=processing_status,
         )
 
-    def update_display_name(
+    def update_metadata(
         self,
         db: Session,
         case_id: UUID,
         evidence_id: UUID,
-        display_name: str | None,
+        payload: EvidenceMetadataUpdate,
     ) -> Evidence:
         evidence = evidence_repository.get_by_id_and_case_id(
             db=db,
@@ -132,7 +133,10 @@ class EvidenceService:
         if evidence is None:
             raise EvidenceNotFoundError("Evidence not found")
 
-        evidence.display_name = display_name
+        update_data = payload.model_dump(exclude_unset=True)
+
+        for field, value in update_data.items():
+            setattr(evidence, field, value)
 
         evidence_repository.update(
             db=db,

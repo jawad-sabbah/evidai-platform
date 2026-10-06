@@ -6,7 +6,7 @@ from fastapi import APIRouter, File, Form, Query, UploadFile, status
 from app.api.dependencies import CaseMemberUser, CaseOwnerUser, DbSession
 from app.core.enums import EvidenceProcessingStatus
 from app.schemas.evidence import (
-    EvidenceDisplayNameUpdate,
+    EvidenceMetadataUpdate,
     EvidenceResponse,
 )
 from app.services.evidence_service import evidence_service
@@ -88,21 +88,21 @@ def get_evidence_by_case(
 
 
 @router.patch(
-    "/{evidence_id}/display-name",
+    "/{evidence_id}",
     response_model=EvidenceResponse,
 )
-def update_evidence_display_name(
+def update_evidence_metadata(
     case_id: UUID,
     evidence_id: UUID,
-    payload: EvidenceDisplayNameUpdate,
+    payload: EvidenceMetadataUpdate,
     db: DbSession,
     current_user: CaseMemberUser,
 ) -> EvidenceResponse:
-    return evidence_service.update_display_name(
+    return evidence_service.update_metadata(
         db=db,
         case_id=case_id,
         evidence_id=evidence_id,
-        display_name=payload.display_name,
+        payload=payload,
     )
 
 
