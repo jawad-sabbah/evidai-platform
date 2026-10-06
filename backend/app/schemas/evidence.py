@@ -35,3 +35,4 @@ class EvidenceResponse(BaseModel):
 class EvidenceMetadataUpdate(BaseModel):
     display_name: str | None = None
     description: str | None = None
+    source_type: str | None = None
