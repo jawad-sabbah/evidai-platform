@@ -116,6 +116,34 @@ class EvidenceService:
             processing_status=processing_status,
         )
 
+    def update_display_name(
+        self,
+        db: Session,
+        case_id: UUID,
+        evidence_id: UUID,
+        display_name: str | None,
+    ) -> Evidence:
+        evidence = evidence_repository.get_by_id_and_case_id(
+            db=db,
+            evidence_id=evidence_id,
+            case_id=case_id,
+        )
+
+        if evidence is None:
+            raise EvidenceNotFoundError("Evidence not found")
+
+        evidence.display_name = display_name
+
+        evidence_repository.update(
+            db=db,
+            evidence=evidence,
+        )
+
+        db.commit()
+        db.refresh(evidence)
+
+        return evidence
+
     def delete_evidence(
         self,
         db: Session,

@@ -30,3 +30,7 @@ class EvidenceResponse(BaseModel):
 
     created_at: datetime
     updated_at: datetime
+
+
+class EvidenceDisplayNameUpdate(BaseModel):
+    display_name: str | None
