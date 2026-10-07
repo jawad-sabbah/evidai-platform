@@ -13,7 +13,6 @@ from app.core.exceptions import (
     ProcessingJobNotFoundError,
 )
 from app.db.session import SessionLocal
-from app.models.processing_step import ProcessingStep
 from app.processing.pipeline import ProcessingPipeline
 from app.repositories.processing_job_repository import (
     processing_job_repository,
@@ -54,6 +53,8 @@ class EvidenceWorker:
             # mark status as RUNNING
             processing_job.status = ProcessingJobStatus.RUNNING.value
             processing_job.started_at = datetime.now(UTC)  # add started at
+            # increment processing attempt count
+            processing_job.attempt_count += 1
 
             processing_job_repository.update(
                 db=self.db,
@@ -72,9 +73,24 @@ class EvidenceWorker:
                 db=self.db,
             )
 
-            pipeline.execute(
-                job_id=processing_job.id,
-            )
+            try:
+                pipeline.execute(
+                    job_id=processing_job.id,
+                )
+            except Exception:
+                # retry job if maximum attempts have not been reached
+                if processing_job.attempt_count < processing_job.max_attempts:
+                    processing_job.status = ProcessingJobStatus.QUEUED.value
+                else:
+                    processing_job.status = ProcessingJobStatus.FAILED.value
+
+                processing_job_repository.update(
+                    db=self.db,
+                    processing_job=processing_job,
+                )
+
+                self.db.commit()
+                raise
 
             # mark processing job as COMPLETED
             processing_job.status = ProcessingJobStatus.COMPLETED.value
@@ -124,14 +140,8 @@ class EvidenceWorker:
         )
 
         for step_name in step_names:
-            processing_step = ProcessingStep(
-                job_id=job_id,
-                step_name=step_name.value,
-            )
-
-            processing_step_repository.create(
-                db=self.db,
-                processing_step=processing_step,
+            processing_step_repository.get_by_job_and_name(
+                db=self.db, job_id=job_id, step_name=step_name.value
             )
 
         self.db.commit()
