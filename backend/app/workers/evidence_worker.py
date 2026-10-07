@@ -4,6 +4,7 @@ from uuid import UUID
 from sqlalchemy.orm import Session
 
 from app.db.session import SessionLocal
+from app.repositories.processing_job_repository import processing_job_repository
 
 
 class EvidenceWorker:
@@ -13,8 +14,22 @@ class EvidenceWorker:
     def start(self, job_id: UUID) -> None:
         self.db = SessionLocal()
 
-        try:
-            print(f"Evidence worker started for job {job_id}")
+        try:  # get the proccess job
+            processing_job = processing_job_repository.get_by_id(
+                db=self.db,
+                job_id=job_id,
+            )
+
+            if processing_job is None:
+                print(f"Processing job {job_id} not found")
+                return
+
+            print(
+                f"Processing job found: "
+                f"id={processing_job.id}, "
+                f"status={processing_job.status}, "
+                f"evidence_id={processing_job.evidence_id}"
+            )
         finally:
             self.db.close()
             self.db = None
