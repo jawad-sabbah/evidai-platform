@@ -74,6 +74,16 @@ class EvidenceWorker:
                 job_id=processing_job.id,
             )
 
+            # mark processing job as COMPLETED
+            processing_job.status = ProcessingJobStatus.COMPLETED.value
+
+            processing_job_repository.update(
+                db=self.db,
+                processing_job=processing_job,
+            )
+
+            self.db.commit()
+
             print(
                 f"Processing job found: "
                 f"id={processing_job.id}, "
