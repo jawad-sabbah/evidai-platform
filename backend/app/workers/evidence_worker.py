@@ -53,6 +53,8 @@ class EvidenceWorker:
             # mark status as RUNNING
             processing_job.status = ProcessingJobStatus.RUNNING.value
             processing_job.started_at = datetime.now(UTC)  # add started at
+            # increment processing attempt count
+            processing_job.attempt_count += 1
 
             processing_job_repository.update(
                 db=self.db,
