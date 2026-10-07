@@ -3,13 +3,20 @@ from uuid import UUID
 
 from sqlalchemy.orm import Session
 
-from app.core.enums import ProcessingJobStatus
+from app.core.enums import (
+    ProcessingJobStatus,
+    ProcessingStepName,
+)
 from app.core.exceptions import (
     InvalidProcessingJobStatusError,
     ProcessingJobNotFoundError,
 )
 from app.db.session import SessionLocal
+from app.models.processing_step import ProcessingStep
 from app.repositories.processing_job_repository import processing_job_repository
+from app.repositories.processing_step_repository import (
+    processing_step_repository,
+)
 
 
 class EvidenceWorker:
@@ -46,6 +53,11 @@ class EvidenceWorker:
 
             self.db.commit()
 
+            ## start processing steps
+            self.initialize_processing_steps(
+                processing_job.id,
+            )
+
             print(
                 f"Processing job found: "
                 f"id={processing_job.id}, "
@@ -65,6 +77,33 @@ class EvidenceWorker:
             self.db.close()
             self.db = None
             print("Evidence worker stopped")
+
+    def initialize_processing_steps(
+        self,
+        job_id: UUID,
+    ) -> None:
+        if self.db is None:
+            raise RuntimeError("Worker database session is not initialized")
+
+        step_names = (
+            ProcessingStepName.LOAD_FILE,
+            ProcessingStepName.EXTRACT_CONTENT,
+            ProcessingStepName.NORMALIZE_CONTENT,
+            ProcessingStepName.STORE_RESULT,
+        )
+
+        for step_name in step_names:
+            processing_step = ProcessingStep(
+                job_id=job_id,
+                step_name=step_name.value,
+            )
+
+            processing_step_repository.create(
+                db=self.db,
+                processing_step=processing_step,
+            )
+
+        self.db.commit()
 
 
 def parse_args() -> argparse.Namespace:
