@@ -3,6 +3,7 @@ from uuid import UUID
 
 from sqlalchemy.orm import Session
 
+from app.core.exceptions import ProcessingJobNotFoundError
 from app.db.session import SessionLocal
 from app.repositories.processing_job_repository import processing_job_repository
 
@@ -23,8 +24,7 @@ class EvidenceWorker:
             )
 
             if processing_job is None:
-                print(f"Processing job {job_id} not found")
-                return
+                raise ProcessingJobNotFoundError(f"Processing job {job_id} not found")
 
             print(
                 f"Processing job found: "

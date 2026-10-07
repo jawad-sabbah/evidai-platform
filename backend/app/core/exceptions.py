@@ -68,3 +68,7 @@ class EvidenceNotFoundError(Exception):
 
 class EvidenceProcessingError(Exception):
     """Raised when evidence cannot be modified during active processing."""
+
+
+class ProcessingJobNotFoundError(Exception):
+    """Raised when a processing job cannot be found."""
