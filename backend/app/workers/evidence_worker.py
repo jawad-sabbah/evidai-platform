@@ -3,7 +3,11 @@ from uuid import UUID
 
 from sqlalchemy.orm import Session
 
-from app.core.exceptions import ProcessingJobNotFoundError
+from app.core.enums import ProcessingJobStatus
+from app.core.exceptions import (
+    InvalidProcessingJobStatusError,
+    ProcessingJobNotFoundError,
+)
 from app.db.session import SessionLocal
 from app.repositories.processing_job_repository import processing_job_repository
 
@@ -22,9 +26,15 @@ class EvidenceWorker:
                 db=self.db,
                 job_id=job_id,
             )
-
+            ## check if exsit job found
             if processing_job is None:
                 raise ProcessingJobNotFoundError(f"Processing job {job_id} not found")
+
+            ## check if status is QUEUED
+            if processing_job.status != ProcessingJobStatus.QUEUED.value:
+                raise InvalidProcessingJobStatusError(
+                    f"Processing job {job_id} is not queued"
+                )
 
             print(
                 f"Processing job found: "

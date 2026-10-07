@@ -72,3 +72,7 @@ class EvidenceProcessingError(Exception):
 
 class ProcessingJobNotFoundError(Exception):
     """Raised when a processing job cannot be found."""
+
+
+class InvalidProcessingJobStatusError(Exception):
+    """Raised when a processing job is not in a processable state."""
