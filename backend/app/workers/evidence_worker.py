@@ -1,4 +1,5 @@
 import argparse
+from datetime import UTC, datetime
 from uuid import UUID
 
 from sqlalchemy.orm import Session
@@ -52,6 +53,7 @@ class EvidenceWorker:
 
             # mark status as RUNNING
             processing_job.status = ProcessingJobStatus.RUNNING.value
+            processing_job.started_at = datetime.now(UTC)  # add started at
 
             processing_job_repository.update(
                 db=self.db,
@@ -76,6 +78,9 @@ class EvidenceWorker:
 
             # mark processing job as COMPLETED
             processing_job.status = ProcessingJobStatus.COMPLETED.value
+            processing_job.completed_at = datetime.now(
+                UTC
+            )  # add time when the job completed
 
             processing_job_repository.update(
                 db=self.db,
