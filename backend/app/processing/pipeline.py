@@ -1,0 +1,89 @@
+from datetime import UTC, datetime
+from uuid import UUID
+
+from sqlalchemy.orm import Session
+
+from app.core.enums import ProcessingStepStatus
+from app.models.processing_step import ProcessingStep
+from app.processing.step_executor import processing_step_executor
+from app.repositories.processing_step_repository import (
+    processing_step_repository,
+)
+
+
+class ProcessingPipeline:
+    def __init__(
+        self,
+        db: Session,
+    ) -> None:
+        self.db = db
+
+    def execute(
+        self,
+        job_id: UUID,
+    ) -> None:
+        steps = processing_step_repository.list_by_job_id(
+            db=self.db,
+            job_id=job_id,
+        )
+
+        for step in steps:
+            self._mark_running(step)
+
+            try:
+                processing_step_executor.execute(
+                    step.step_name,
+                )
+
+                self._mark_completed(step)
+
+            except Exception as exc:
+                self._mark_failed(
+                    step=step,
+                    error_message=str(exc),
+                )
+                raise
+
+    def _mark_running(
+        self,
+        step: ProcessingStep,
+    ) -> None:
+        step.status = ProcessingStepStatus.RUNNING.value
+        step.started_at = datetime.now(UTC)
+
+        processing_step_repository.update(
+            db=self.db,
+            processing_step=step,
+        )
+
+        self.db.commit()
+
+    def _mark_completed(
+        self,
+        step: ProcessingStep,
+    ) -> None:
+        step.status = ProcessingStepStatus.COMPLETED.value
+        step.completed_at = datetime.now(UTC)
+
+        processing_step_repository.update(
+            db=self.db,
+            processing_step=step,
+        )
+
+        self.db.commit()
+
+    def _mark_failed(
+        self,
+        step: ProcessingStep,
+        error_message: str,
+    ) -> None:
+        step.status = ProcessingStepStatus.FAILED.value
+        step.error_message = error_message
+        step.completed_at = datetime.now(UTC)
+
+        processing_step_repository.update(
+            db=self.db,
+            processing_step=step,
+        )
+
+        self.db.commit()

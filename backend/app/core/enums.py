@@ -73,3 +73,18 @@ class ProcessingJobStatus(StrEnum):
     COMPLETED = "COMPLETED"
     FAILED = "FAILED"
     CANCELLED = "CANCELLED"
+
+
+class ProcessingStepStatus(StrEnum):
+    PENDING = "PENDING"
+    RUNNING = "RUNNING"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+    SKIPPED = "SKIPPED"
+
+
+class ProcessingStepName(StrEnum):
+    LOAD_FILE = "LOAD_FILE"
+    EXTRACT_CONTENT = "EXTRACT_CONTENT"
+    NORMALIZE_CONTENT = "NORMALIZE_CONTENT"
+    STORE_RESULT = "STORE_RESULT"

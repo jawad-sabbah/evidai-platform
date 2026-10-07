@@ -13,7 +13,10 @@ from app.core.exceptions import (
 )
 from app.db.session import SessionLocal
 from app.models.processing_step import ProcessingStep
-from app.repositories.processing_job_repository import processing_job_repository
+from app.processing.pipeline import ProcessingPipeline
+from app.repositories.processing_job_repository import (
+    processing_job_repository,
+)
 from app.repositories.processing_step_repository import (
     processing_step_repository,
 )
@@ -23,7 +26,10 @@ class EvidenceWorker:
     def __init__(self) -> None:
         self.db: Session | None = None
 
-    def start(self, job_id: UUID) -> None:
+    def start(
+        self,
+        job_id: UUID,
+    ) -> None:
         print(f"Evidence worker starting for job {job_id}")
 
         self.db = SessionLocal()
@@ -33,17 +39,18 @@ class EvidenceWorker:
                 db=self.db,
                 job_id=job_id,
             )
-            ## check if exsit job found
+
+            # check if exist job found
             if processing_job is None:
                 raise ProcessingJobNotFoundError(f"Processing job {job_id} not found")
 
-            ## check if status is QUEUED
+            # check if status is QUEUED
             if processing_job.status != ProcessingJobStatus.QUEUED.value:
                 raise InvalidProcessingJobStatusError(
                     f"Processing job {job_id} is not queued"
                 )
 
-            ## mark status as RUNNING
+            # mark status as RUNNING
             processing_job.status = ProcessingJobStatus.RUNNING.value
 
             processing_job_repository.update(
@@ -53,9 +60,18 @@ class EvidenceWorker:
 
             self.db.commit()
 
-            ## start processing steps
+            # start processing steps
             self.initialize_processing_steps(
                 processing_job.id,
+            )
+
+            # execute processing pipeline
+            pipeline = ProcessingPipeline(
+                db=self.db,
+            )
+
+            pipeline.execute(
+                job_id=processing_job.id,
             )
 
             print(
@@ -110,6 +126,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Process an evidence processing job",
     )
+
     parser.add_argument(
         "job_id",
         type=UUID,
