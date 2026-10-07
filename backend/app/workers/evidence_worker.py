@@ -12,9 +12,11 @@ class EvidenceWorker:
         self.db: Session | None = None
 
     def start(self, job_id: UUID) -> None:
+        print(f"Evidence worker starting for job {job_id}")
+
         self.db = SessionLocal()
 
-        try:  # get the proccess job
+        try:
             processing_job = processing_job_repository.get_by_id(
                 db=self.db,
                 job_id=job_id,
@@ -30,9 +32,19 @@ class EvidenceWorker:
                 f"status={processing_job.status}, "
                 f"evidence_id={processing_job.evidence_id}"
             )
+
+        except KeyboardInterrupt:
+            self.db.rollback()
+            print("Evidence worker interrupted")
+
+        except Exception:
+            self.db.rollback()
+            raise
+
         finally:
             self.db.close()
             self.db = None
+            print("Evidence worker stopped")
 
 
 def parse_args() -> argparse.Namespace:
