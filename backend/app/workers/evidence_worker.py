@@ -13,7 +13,6 @@ from app.core.exceptions import (
     ProcessingJobNotFoundError,
 )
 from app.db.session import SessionLocal
-from app.models.processing_step import ProcessingStep
 from app.processing.pipeline import ProcessingPipeline
 from app.repositories.processing_job_repository import (
     processing_job_repository,
@@ -124,14 +123,8 @@ class EvidenceWorker:
         )
 
         for step_name in step_names:
-            processing_step = ProcessingStep(
-                job_id=job_id,
-                step_name=step_name.value,
-            )
-
-            processing_step_repository.create(
-                db=self.db,
-                processing_step=processing_step,
+            processing_step_repository.get_by_job_and_name(
+                db=self.db, job_id=job_id, step_name=step_name.value
             )
 
         self.db.commit()
