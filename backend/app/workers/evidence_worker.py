@@ -71,9 +71,21 @@ class EvidenceWorker:
                 db=self.db,
             )
 
-            pipeline.execute(
-                job_id=processing_job.id,
-            )
+            try:
+                pipeline.execute(
+                    job_id=processing_job.id,
+                )
+            except Exception:
+                # mark processing job as FAILED
+                processing_job.status = ProcessingJobStatus.FAILED.value
+
+                processing_job_repository.update(
+                    db=self.db,
+                    processing_job=processing_job,
+                )
+
+                self.db.commit()
+                raise
 
             # mark processing job as COMPLETED
             processing_job.status = ProcessingJobStatus.COMPLETED.value
