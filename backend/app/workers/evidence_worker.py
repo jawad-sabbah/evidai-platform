@@ -36,6 +36,16 @@ class EvidenceWorker:
                     f"Processing job {job_id} is not queued"
                 )
 
+            ## mark status as RUNNING
+            processing_job.status = ProcessingJobStatus.RUNNING.value
+
+            processing_job_repository.update(
+                db=self.db,
+                processing_job=processing_job,
+            )
+
+            self.db.commit()
+
             print(
                 f"Processing job found: "
                 f"id={processing_job.id}, "
