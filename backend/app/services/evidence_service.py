@@ -1,7 +1,9 @@
+import logging
 from pathlib import Path
 from uuid import UUID, uuid4
 
 from fastapi import UploadFile
+from redis.exceptions import ConnectionError, TimeoutError
 from sqlalchemy.orm import Session
 
 from app.core.enums import EvidenceProcessingStatus
@@ -12,10 +14,13 @@ from app.core.exceptions import (
 )
 from app.models.evidence import Evidence
 from app.models.processing_job import ProcessingJob
+from app.queue.processing_queue import ProcessingQueue
 from app.repositories.evidence_repository import evidence_repository
 from app.repositories.processing_job_repository import processing_job_repository
 from app.schemas.evidence import EvidenceMetadataUpdate
 from app.services.storage_service import local_storage_service
+
+logger = logging.getLogger(__name__)
 
 
 class EvidenceService:
@@ -56,6 +61,7 @@ class EvidenceService:
             processing_status=EvidenceProcessingStatus.QUEUED.value,
         )
 
+        # Step 1: Save evidence and job in PostgreSQL
         try:
             evidence_repository.create(
                 db=db,
@@ -73,9 +79,6 @@ class EvidenceService:
             )
 
             db.commit()
-            db.refresh(evidence)
-
-            return evidence
 
         except Exception:
             db.rollback()
@@ -83,6 +86,27 @@ class EvidenceService:
             local_storage_service.delete(stored_file.storage_key)
 
             raise
+
+        # Step 2: Database is committed.
+        # Never delete the evidence file because Redis failed.
+        db.refresh(evidence)
+
+        # Step 3: Enqueue the job in Redis
+        try:
+            processing_queue = ProcessingQueue()
+
+            processing_queue.enqueue(
+                job_id=processing_job.id,
+            )
+
+        except (ConnectionError, TimeoutError):
+            logger.exception(
+                "Failed to enqueue processing job %s in Redis. "
+                "Job remains QUEUED in PostgreSQL.",
+                processing_job.id,
+            )
+
+        return evidence
 
     def get_evidence_by_id(
         self,
