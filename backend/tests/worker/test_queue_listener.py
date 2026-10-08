@@ -41,7 +41,6 @@ def test_listener_waits_when_queue_empty():
 
     def dequeue_once(timeout):
         listener.stop()
-        return None
 
     processing_queue.dequeue.side_effect = dequeue_once
 

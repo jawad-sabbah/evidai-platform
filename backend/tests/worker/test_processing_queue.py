@@ -1,8 +1,8 @@
 from unittest.mock import Mock
 from uuid import uuid4
 
-from redis.exceptions import ConnectionError
 import pytest
+from redis.exceptions import ConnectionError
 
 from app.queue.processing_queue import ProcessingQueue
 
@@ -55,9 +55,7 @@ def test_dequeue_empty_queue():
 
 def test_enqueue_redis_connection_failure():
     redis_client = Mock()
-    redis_client.rpush.side_effect = ConnectionError(
-        "Redis unavailable"
-    )
+    redis_client.rpush.side_effect = ConnectionError("Redis unavailable")
 
     queue = ProcessingQueue(redis_client=redis_client)
 
@@ -67,9 +65,7 @@ def test_enqueue_redis_connection_failure():
 
 def test_dequeue_redis_connection_failure():
     redis_client = Mock()
-    redis_client.blpop.side_effect = ConnectionError(
-        "Redis unavailable"
-    )
+    redis_client.blpop.side_effect = ConnectionError("Redis unavailable")
 
     queue = ProcessingQueue(redis_client=redis_client)
 
