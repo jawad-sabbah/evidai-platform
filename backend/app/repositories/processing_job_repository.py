@@ -1,6 +1,7 @@
+from datetime import UTC, datetime
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
 from app.models.processing_job import ProcessingJob
@@ -62,6 +63,38 @@ class ProcessingJobRepository:
         )
 
         return db.scalar(statement)
+
+    def claim_job(
+        self,
+        db: Session,
+        job_id: UUID,
+    ) -> ProcessingJob | None:
+        statement = (
+            update(ProcessingJob)
+            .where(
+                ProcessingJob.id == job_id,
+                ProcessingJob.status == "QUEUED",
+                ProcessingJob.attempt_count < ProcessingJob.max_attempts,
+            )
+            .values(
+                status="RUNNING",
+                started_at=datetime.now(UTC),
+                attempt_count=ProcessingJob.attempt_count + 1,
+            )
+            .returning(ProcessingJob.id)
+        )
+
+        claimed_job_id = db.scalar(statement)
+
+        if claimed_job_id is None:
+            return None
+
+        db.commit()
+
+        return self.get_fresh_by_id(
+            db=db,
+            job_id=claimed_job_id,
+        )
 
 
 processing_job_repository = ProcessingJobRepository()

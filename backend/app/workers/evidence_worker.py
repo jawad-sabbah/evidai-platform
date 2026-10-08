@@ -50,18 +50,18 @@ class EvidenceWorker:
                     f"Processing job {job_id} is not queued"
                 )
 
-            # mark status as RUNNING
-            processing_job.status = ProcessingJobStatus.RUNNING.value
-            processing_job.started_at = datetime.now(UTC)  # add started at
-            # increment processing attempt count
-            processing_job.attempt_count += 1
-
-            processing_job_repository.update(
+            # Atomically claim the job before processing
+            claimed_job = processing_job_repository.claim_job(
                 db=self.db,
-                processing_job=processing_job,
+                job_id=job_id,
             )
 
-            self.db.commit()
+            if claimed_job is None:
+                raise InvalidProcessingJobStatusError(
+                    f"Processing job {job_id} could not be claimed"
+                )
+
+            processing_job = claimed_job
 
             # start processing steps
             self.initialize_processing_steps(
