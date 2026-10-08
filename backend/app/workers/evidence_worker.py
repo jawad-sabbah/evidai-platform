@@ -8,10 +8,6 @@ from app.core.enums import (
     ProcessingJobStatus,
     ProcessingStepName,
 )
-from app.core.exceptions import (
-    InvalidProcessingJobStatusError,
-    ProcessingJobNotFoundError,
-)
 from app.db.session import SessionLocal
 from app.processing.pipeline import ProcessingPipeline
 from app.repositories.processing_job_repository import (
@@ -40,11 +36,15 @@ class EvidenceWorker:
                 job_id=job_id,
             )
 
-            # check if exist job found
+            # Ignore stale messages referencing deleted jobs
             if processing_job is None:
-                raise ProcessingJobNotFoundError(f"Processing job {job_id} not found")
+                print(
+                    f"Processing job {job_id} no longer exists. "
+                    "Skipping stale queue message."
+                )
+                return
 
-            # Ignore jobs already being processed by another worker
+            # Ignore jobs that are already running
             if processing_job.status == ProcessingJobStatus.RUNNING.value:
                 print(f"Processing job {job_id} is already RUNNING. Skipping.")
                 return
@@ -54,11 +54,24 @@ class EvidenceWorker:
                 print(f"Processing job {job_id} is already COMPLETED. Skipping.")
                 return
 
-            # check if status is QUEUED
-            if processing_job.status != ProcessingJobStatus.QUEUED.value:
-                raise InvalidProcessingJobStatusError(
-                    f"Processing job {job_id} is not queued"
+            # Ignore jobs that were cancelled or failed
+            if processing_job.status in (
+                ProcessingJobStatus.CANCELLED.value,
+                ProcessingJobStatus.FAILED.value,
+            ):
+                print(
+                    f"Processing job {job_id} has status "
+                    f"{processing_job.status}. Skipping stale queue message."
                 )
+                return
+
+            # Only QUEUED jobs are eligible
+            if processing_job.status != ProcessingJobStatus.QUEUED.value:
+                print(
+                    f"Processing job {job_id} has unexpected status "
+                    f"{processing_job.status}. Skipping."
+                )
+                return
 
             # Atomically claim the job before processing
             claimed_job = processing_job_repository.claim_job(
