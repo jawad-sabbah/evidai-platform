@@ -35,7 +35,7 @@ class EvidenceWorker:
         self.db = SessionLocal()
 
         try:
-            processing_job = processing_job_repository.get_by_id(
+            processing_job = processing_job_repository.get_fresh_by_id(
                 db=self.db,
                 job_id=job_id,
             )

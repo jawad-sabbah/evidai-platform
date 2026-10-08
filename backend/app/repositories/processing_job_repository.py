@@ -7,12 +7,18 @@ from app.models.processing_job import ProcessingJob
 
 
 class ProcessingJobRepository:
-    def get_by_id(
+    def get_fresh_by_id(
         self,
         db: Session,
         job_id: UUID,
     ) -> ProcessingJob | None:
-        return db.get(ProcessingJob, job_id)
+        statement = (
+            select(ProcessingJob)
+            .where(ProcessingJob.id == job_id)
+            .execution_options(populate_existing=True)
+        )
+
+        return db.scalar(statement)
 
     def get_by_evidence_id(
         self,
