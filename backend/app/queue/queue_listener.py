@@ -1,10 +1,15 @@
+import logging
+import time
 from collections.abc import Callable
 from uuid import UUID
 
+from redis.exceptions import ConnectionError, TimeoutError
+
 from app.queue.processing_queue import ProcessingQueue
 
+logger = logging.getLogger(__name__)
 
-## QueueListener Continuously waits for job IDs
+
 class QueueListener:
     def __init__(
         self,
@@ -18,12 +23,21 @@ class QueueListener:
     def start(self) -> None:
         self.running = True
 
-        print("Worker waiting for processing jobs...")
+        logger.info("Worker waiting for processing jobs...")
 
         while self.running:
-            job_id = self.processing_queue.dequeue(
-                timeout=5,
-            )
+            try:
+                job_id = self.processing_queue.dequeue(
+                    timeout=5,
+                )
+
+            except (ConnectionError, TimeoutError) as exc:
+                logger.error(
+                    "Redis unavailable: %s. Retrying in 5 seconds...",
+                    exc,
+                )
+                time.sleep(5)
+                continue
 
             if job_id is None:
                 continue
