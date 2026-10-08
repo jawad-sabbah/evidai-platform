@@ -12,6 +12,7 @@ from app.core.exceptions import (
 )
 from app.models.evidence import Evidence
 from app.models.processing_job import ProcessingJob
+from app.queue.processing_queue import ProcessingQueue
 from app.repositories.evidence_repository import evidence_repository
 from app.repositories.processing_job_repository import processing_job_repository
 from app.schemas.evidence import EvidenceMetadataUpdate
@@ -74,6 +75,10 @@ class EvidenceService:
 
             db.commit()
             db.refresh(evidence)
+
+            # Enqueue the process jobID in redis
+            processing_queue = ProcessingQueue()
+            processing_queue.enqueue(job_id=processing_job.id)
 
             return evidence
 
