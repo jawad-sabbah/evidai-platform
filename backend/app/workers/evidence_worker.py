@@ -49,6 +49,11 @@ class EvidenceWorker:
                 print(f"Processing job {job_id} is already RUNNING. Skipping.")
                 return
 
+            # Ignore jobs that have already completed
+            if processing_job.status == ProcessingJobStatus.COMPLETED.value:
+                print(f"Processing job {job_id} is already COMPLETED. Skipping.")
+                return
+
             # check if status is QUEUED
             if processing_job.status != ProcessingJobStatus.QUEUED.value:
                 raise InvalidProcessingJobStatusError(
