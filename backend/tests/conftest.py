@@ -18,6 +18,11 @@ from app.main import app
 
 
 @pytest.fixture
+def db_engine():
+    return engine
+
+
+@pytest.fixture
 def db_session():
     connection = engine.connect()
     transaction = connection.begin()
