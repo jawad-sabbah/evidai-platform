@@ -44,6 +44,11 @@ class EvidenceWorker:
             if processing_job is None:
                 raise ProcessingJobNotFoundError(f"Processing job {job_id} not found")
 
+            # Ignore jobs already being processed by another worker
+            if processing_job.status == ProcessingJobStatus.RUNNING.value:
+                print(f"Processing job {job_id} is already RUNNING. Skipping.")
+                return
+
             # check if status is QUEUED
             if processing_job.status != ProcessingJobStatus.QUEUED.value:
                 raise InvalidProcessingJobStatusError(
@@ -57,9 +62,10 @@ class EvidenceWorker:
             )
 
             if claimed_job is None:
-                raise InvalidProcessingJobStatusError(
-                    f"Processing job {job_id} could not be claimed"
+                print(
+                    f"Processing job {job_id} was claimed by another worker. Skipping."
                 )
+                return
 
             processing_job = claimed_job
 
