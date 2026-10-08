@@ -23,3 +23,19 @@ class ProcessingQueue:
             self.QUEUE_NAME,
             str(job_id),
         )
+
+    def dequeue(
+        self,
+        timeout: int = 5,
+    ) -> UUID | None:
+        result = self.redis.blpop(
+            self.QUEUE_NAME,
+            timeout=timeout,
+        )
+
+        if result is None:
+            return None
+
+        _, job_id = result
+
+        return UUID(job_id)
