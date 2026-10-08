@@ -8,10 +8,6 @@ from app.core.enums import (
     ProcessingJobStatus,
     ProcessingStepName,
 )
-from app.core.exceptions import (
-    InvalidProcessingJobStatusError,
-    ProcessingJobNotFoundError,
-)
 from app.db.session import SessionLocal
 from app.processing.pipeline import ProcessingPipeline
 from app.repositories.processing_job_repository import (
@@ -35,33 +31,61 @@ class EvidenceWorker:
         self.db = SessionLocal()
 
         try:
-            processing_job = processing_job_repository.get_by_id(
+            processing_job = processing_job_repository.get_fresh_by_id(
                 db=self.db,
                 job_id=job_id,
             )
 
-            # check if exist job found
+            # Ignore stale messages referencing deleted jobs
             if processing_job is None:
-                raise ProcessingJobNotFoundError(f"Processing job {job_id} not found")
-
-            # check if status is QUEUED
-            if processing_job.status != ProcessingJobStatus.QUEUED.value:
-                raise InvalidProcessingJobStatusError(
-                    f"Processing job {job_id} is not queued"
+                print(
+                    f"Processing job {job_id} no longer exists. "
+                    "Skipping stale queue message."
                 )
+                return
 
-            # mark status as RUNNING
-            processing_job.status = ProcessingJobStatus.RUNNING.value
-            processing_job.started_at = datetime.now(UTC)  # add started at
-            # increment processing attempt count
-            processing_job.attempt_count += 1
+            # Ignore jobs that are already running
+            if processing_job.status == ProcessingJobStatus.RUNNING.value:
+                print(f"Processing job {job_id} is already RUNNING. Skipping.")
+                return
 
-            processing_job_repository.update(
+            # Ignore jobs that have already completed
+            if processing_job.status == ProcessingJobStatus.COMPLETED.value:
+                print(f"Processing job {job_id} is already COMPLETED. Skipping.")
+                return
+
+            # Ignore jobs that were cancelled or failed
+            if processing_job.status in (
+                ProcessingJobStatus.CANCELLED.value,
+                ProcessingJobStatus.FAILED.value,
+            ):
+                print(
+                    f"Processing job {job_id} has status "
+                    f"{processing_job.status}. Skipping stale queue message."
+                )
+                return
+
+            # Only QUEUED jobs are eligible
+            if processing_job.status != ProcessingJobStatus.QUEUED.value:
+                print(
+                    f"Processing job {job_id} has unexpected status "
+                    f"{processing_job.status}. Skipping."
+                )
+                return
+
+            # Atomically claim the job before processing
+            claimed_job = processing_job_repository.claim_job(
                 db=self.db,
-                processing_job=processing_job,
+                job_id=job_id,
             )
 
-            self.db.commit()
+            if claimed_job is None:
+                print(
+                    f"Processing job {job_id} was claimed by another worker. Skipping."
+                )
+                return
+
+            processing_job = claimed_job
 
             # start processing steps
             self.initialize_processing_steps(
