@@ -41,6 +41,10 @@ class ProcessingPipeline:
                     f"is missing for job {job_id}"
                 )
 
+            # Skip steps explicitly marked as SKIPPED
+            if step.status == ProcessingStepStatus.SKIPPED.value:
+                continue
+
             self._mark_running(step)
 
             try:
