@@ -101,6 +101,16 @@ class EvidenceWorker:
                 f"for job {processing_job.id}"
             )
 
+            # detect complete steps
+            completed_steps = self.detect_completed_steps(
+                existing_steps,
+            )
+
+            print(
+                f"Detected {len(completed_steps)} completed steps "
+                f"for job {processing_job.id}"
+            )
+
             # execute processing pipeline
             pipeline = ProcessingPipeline(
                 db=self.db,
@@ -172,6 +182,16 @@ class EvidenceWorker:
             db=self.db,
             job_id=job_id,
         )
+
+    def detect_completed_steps(
+        self,
+        steps: list[ProcessingStep],
+    ) -> set[str]:
+        return {
+            step.step_name
+            for step in steps
+            if step.status == ProcessingStepStatus.COMPLETED.value
+        }
 
     def initialize_processing_steps(self, job_id: UUID) -> None:
         if self.db is None:
