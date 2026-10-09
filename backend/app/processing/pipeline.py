@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.core.enums import ProcessingStepStatus
 from app.models.processing_step import ProcessingStep
+from app.processing.step_definitions import ORDERED_PROCESSING_STEPS
 from app.processing.step_executor import processing_step_executor
 from app.repositories.processing_step_repository import (
     processing_step_repository,
@@ -18,16 +19,25 @@ class ProcessingPipeline:
     ) -> None:
         self.db = db
 
-    def execute(
-        self,
-        job_id: UUID,
-    ) -> None:
+    def execute(self, job_id: UUID) -> None:
         steps = processing_step_repository.list_by_job_id(
             db=self.db,
             job_id=job_id,
         )
 
-        for step in steps:
+        # Map database steps by their names
+        steps_by_name = {step.step_name: step for step in steps}
+
+        # Execute steps according to the defined order
+        for step_name in ORDERED_PROCESSING_STEPS:
+            step = steps_by_name.get(step_name.value)
+
+            if step is None:
+                raise RuntimeError(
+                    f"Required processing step {step_name.value} "
+                    f"is missing for job {job_id}"
+                )
+
             self._mark_running(step)
 
             try:
