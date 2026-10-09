@@ -135,11 +135,12 @@ class EvidenceWorker:
                     job_id=processing_job.id,
                 )
             except Exception:
-                # retry job if maximum attempts have not been reached
                 if processing_job.attempt_count < processing_job.max_attempts:
                     processing_job.status = ProcessingJobStatus.QUEUED.value
+                    processing_job.completed_at = None
                 else:
                     processing_job.status = ProcessingJobStatus.FAILED.value
+                    processing_job.completed_at = datetime.now(UTC)
 
                 processing_job_repository.update(
                     db=self.db,

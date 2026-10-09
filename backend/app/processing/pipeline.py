@@ -88,12 +88,11 @@ class ProcessingPipeline:
                 )
                 raise
 
-    def _mark_running(
-        self,
-        step: ProcessingStep,
-    ) -> None:
+    def _mark_running(self, step: ProcessingStep) -> None:
         step.status = ProcessingStepStatus.RUNNING.value
         step.started_at = datetime.now(UTC)
+        step.completed_at = None
+        step.error_message = None
 
         processing_step_repository.update(
             db=self.db,
