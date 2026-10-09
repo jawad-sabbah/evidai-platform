@@ -4,12 +4,11 @@ from uuid import UUID
 
 from sqlalchemy.orm import Session
 
-from app.core.enums import (
-    ProcessingJobStatus,
-    ProcessingStepName,
-)
+from app.core.enums import ProcessingJobStatus, ProcessingStepStatus
 from app.db.session import SessionLocal
+from app.models.processing_step import ProcessingStep
 from app.processing.pipeline import ProcessingPipeline
+from app.processing.step_definitions import ORDERED_PROCESSING_STEPS
 from app.repositories.processing_job_repository import (
     processing_job_repository,
 )
@@ -149,24 +148,27 @@ class EvidenceWorker:
             self.db = None
             print("Evidence worker stopped")
 
-    def initialize_processing_steps(
-        self,
-        job_id: UUID,
-    ) -> None:
+    def initialize_processing_steps(self, job_id: UUID) -> None:
         if self.db is None:
             raise RuntimeError("Worker database session is not initialized")
 
-        step_names = (
-            ProcessingStepName.LOAD_FILE,
-            ProcessingStepName.EXTRACT_CONTENT,
-            ProcessingStepName.NORMALIZE_CONTENT,
-            ProcessingStepName.STORE_RESULT,
-        )
-
-        for step_name in step_names:
-            processing_step_repository.get_by_job_and_name(
-                db=self.db, job_id=job_id, step_name=step_name.value
+        for step_name in ORDERED_PROCESSING_STEPS:
+            existing_step = processing_step_repository.get_by_job_and_name(
+                db=self.db,
+                job_id=job_id,
+                step_name=step_name.value,
             )
+
+            if existing_step is not None:
+                continue
+
+            processing_step = ProcessingStep(
+                job_id=job_id,
+                step_name=step_name.value,
+                status=ProcessingStepStatus.PENDING.value,
+            )
+
+            self.db.add(processing_step)
 
         self.db.commit()
 

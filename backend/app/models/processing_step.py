@@ -1,6 +1,13 @@
 import uuid
 
-from sqlalchemy import CheckConstraint, DateTime, ForeignKey, String, Text
+from sqlalchemy import (
+    CheckConstraint,
+    DateTime,
+    ForeignKey,
+    String,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
@@ -15,6 +22,11 @@ class ProcessingStep(Base):
         CheckConstraint(
             "status IN ('PENDING', 'RUNNING', 'COMPLETED', 'FAILED', 'SKIPPED')",
             name="processing_steps_status_check",
+        ),
+        UniqueConstraint(
+            "job_id",
+            "step_name",
+            name="uq_processing_steps_job_step",
         ),
     )
 
