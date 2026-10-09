@@ -12,33 +12,25 @@ class JsonFormatter(logging.Formatter):
             "message": record.getMessage(),
         }
 
-        if hasattr(record, "event"):
-            log_data["event"] = record.event
-
-        if hasattr(record, "job_id"):
-            log_data["job_id"] = str(record.job_id)
-
-        if hasattr(record, "step_name"):
-            log_data["step_name"] = str(record.step_name)
+        for field in (
+            "event",
+            "job_id",
+            "step_name",
+            "previous_status",
+            "new_status",
+            "attempt_count",
+            "max_attempts",
+        ):
+            if hasattr(record, field):
+                value = getattr(record, field)
+                log_data[field] = (
+                    str(value) if field in ("job_id", "step_name") else value
+                )
 
         if record.exc_info:
             log_data["exception"] = self.formatException(record.exc_info)
 
         return json.dumps(log_data)
-
-
-def configure_logging() -> None:
-    logger = logging.getLogger("app")
-
-    if logger.handlers:
-        return
-
-    handler = logging.StreamHandler()
-    handler.setFormatter(JsonFormatter())
-
-    logger.addHandler(handler)
-    logger.setLevel(logging.INFO)
-    logger.propagate = False
 
 
 class JobLoggerAdapter(logging.LoggerAdapter):
@@ -48,3 +40,17 @@ class JobLoggerAdapter(logging.LoggerAdapter):
             **self.extra,
         }
         return msg, kwargs
+
+
+def configure_logging() -> None:
+    app_logger = logging.getLogger("app")
+
+    if app_logger.handlers:
+        return
+
+    handler = logging.StreamHandler()
+    handler.setFormatter(JsonFormatter())
+
+    app_logger.addHandler(handler)
+    app_logger.setLevel(logging.INFO)
+    app_logger.propagate = False
