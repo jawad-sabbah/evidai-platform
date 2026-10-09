@@ -1,9 +1,11 @@
+import logging
 from datetime import UTC, datetime
 from uuid import UUID
 
 from sqlalchemy.orm import Session
 
 from app.core.enums import ProcessingStepStatus
+from app.core.logging_config import JobLoggerAdapter
 from app.models.processing_step import ProcessingStep
 from app.processing.context import ProcessingContext
 from app.processing.step_definitions import ORDERED_PROCESSING_STEPS
@@ -11,6 +13,8 @@ from app.processing.step_executor import processing_step_executor
 from app.repositories.processing_step_repository import (
     processing_step_repository,
 )
+
+logger = logging.getLogger("app.pipeline")
 
 
 class ProcessingPipeline:
@@ -61,8 +65,21 @@ class ProcessingPipeline:
                     f"is missing for job {job_id}"
                 )
 
+            # Create structured logger for this specific step
+            step_logger = JobLoggerAdapter(
+                logger,
+                {
+                    "job_id": str(job_id),
+                    "step_name": step.step_name,
+                },
+            )
+
             # Skip already completed or explicitly skipped steps
             if not self.should_execute_step(step):
+                step_logger.info(
+                    "Processing step skipped because execution is not required",
+                    extra={"event": "processing_step_skipped"},
+                )
                 continue
 
             # A failed step is eligible for another attempt.
@@ -70,6 +87,11 @@ class ProcessingPipeline:
             if step.status == ProcessingStepStatus.FAILED.value:
                 step.error_message = None
                 step.completed_at = None
+
+            step_logger.info(
+                "Processing step starting",
+                extra={"event": "processing_step_started"},
+            )
 
             self._mark_running(step)
 
@@ -81,10 +103,21 @@ class ProcessingPipeline:
 
                 self._mark_completed(step)
 
+                step_logger.info(
+                    "Processing step completed successfully",
+                    extra={"event": "processing_step_completed"},
+                )
+
             except Exception as exc:
                 self._mark_failed(
                     step=step,
                     error_message=str(exc),
+                )
+
+                step_logger.error(
+                    "Processing step failed: %s",
+                    str(exc),
+                    extra={"event": "processing_step_failed"},
                 )
                 raise
 

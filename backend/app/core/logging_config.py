@@ -18,6 +18,9 @@ class JsonFormatter(logging.Formatter):
         if hasattr(record, "job_id"):
             log_data["job_id"] = str(record.job_id)
 
+        if hasattr(record, "step_name"):
+            log_data["step_name"] = str(record.step_name)
+
         if record.exc_info:
             log_data["exception"] = self.formatException(record.exc_info)
 
