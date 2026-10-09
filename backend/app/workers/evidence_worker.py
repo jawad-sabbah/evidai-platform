@@ -4,12 +4,11 @@ from uuid import UUID
 
 from sqlalchemy.orm import Session
 
-from app.core.enums import (
-    ProcessingJobStatus,
-    ProcessingStepName,
-)
+from app.core.enums import ProcessingJobStatus, ProcessingStepStatus
 from app.db.session import SessionLocal
+from app.models.processing_step import ProcessingStep
 from app.processing.pipeline import ProcessingPipeline
+from app.processing.step_definitions import ORDERED_PROCESSING_STEPS
 from app.repositories.processing_job_repository import (
     processing_job_repository,
 )
@@ -101,6 +100,9 @@ class EvidenceWorker:
                 pipeline.execute(
                     job_id=processing_job.id,
                 )
+                self.validate_processing_steps_completed(
+                    job_id=processing_job.id,
+                )
             except Exception:
                 # retry job if maximum attempts have not been reached
                 if processing_job.attempt_count < processing_job.max_attempts:
@@ -149,26 +151,55 @@ class EvidenceWorker:
             self.db = None
             print("Evidence worker stopped")
 
-    def initialize_processing_steps(
-        self,
-        job_id: UUID,
-    ) -> None:
+    def initialize_processing_steps(self, job_id: UUID) -> None:
         if self.db is None:
             raise RuntimeError("Worker database session is not initialized")
 
-        step_names = (
-            ProcessingStepName.LOAD_FILE,
-            ProcessingStepName.EXTRACT_CONTENT,
-            ProcessingStepName.NORMALIZE_CONTENT,
-            ProcessingStepName.STORE_RESULT,
-        )
-
-        for step_name in step_names:
-            processing_step_repository.get_by_job_and_name(
-                db=self.db, job_id=job_id, step_name=step_name.value
+        for step_name in ORDERED_PROCESSING_STEPS:
+            existing_step = processing_step_repository.get_by_job_and_name(
+                db=self.db,
+                job_id=job_id,
+                step_name=step_name.value,
             )
 
+            if existing_step is not None:
+                continue
+
+            processing_step = ProcessingStep(
+                job_id=job_id,
+                step_name=step_name.value,
+                status=ProcessingStepStatus.PENDING.value,
+            )
+
+            self.db.add(processing_step)
+
         self.db.commit()
+
+    def validate_processing_steps_completed(self, job_id: UUID) -> None:
+        if self.db is None:
+            raise RuntimeError("Worker database session is not initialized")
+
+        steps = processing_step_repository.list_by_job_id(
+            db=self.db,
+            job_id=job_id,
+        )
+
+        steps_by_name = {step.step_name: step for step in steps}
+
+        for step_name in ORDERED_PROCESSING_STEPS:
+            step = steps_by_name.get(step_name.value)
+
+            if step is None:
+                raise RuntimeError(
+                    f"Required processing step {step_name.value} "
+                    f"is missing for job {job_id}"
+                )
+
+            if step.status != ProcessingStepStatus.COMPLETED.value:
+                raise RuntimeError(
+                    f"Required processing step {step_name.value} "
+                    f"is not completed. Current status: {step.status}"
+                )
 
 
 def parse_args() -> argparse.Namespace:
