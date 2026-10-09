@@ -20,9 +20,29 @@ class ProcessingPipeline:
     ) -> None:
         self.db = db
 
+    @staticmethod
+    def should_execute_step(step: ProcessingStep) -> bool:
+        if step.status in (
+            ProcessingStepStatus.COMPLETED.value,
+            ProcessingStepStatus.SKIPPED.value,
+        ):
+            return False
+
+        if step.status in (
+            ProcessingStepStatus.PENDING.value,
+            ProcessingStepStatus.FAILED.value,
+        ):
+            return True
+
+        raise RuntimeError(
+            f"Processing step {step.step_name} cannot be executed "
+            f"from status {step.status}"
+        )
+
     def execute(self, job_id: UUID) -> None:
-        # intialize the context
+        # Initialize the context
         context = ProcessingContext(job_id=job_id)
+
         steps = processing_step_repository.list_by_job_id(
             db=self.db,
             job_id=job_id,
@@ -41,14 +61,23 @@ class ProcessingPipeline:
                     f"is missing for job {job_id}"
                 )
 
-            # Skip steps explicitly marked as SKIPPED
-            if step.status == ProcessingStepStatus.SKIPPED.value:
+            # Skip already completed or explicitly skipped steps
+            if not self.should_execute_step(step):
                 continue
+
+            # A failed step is eligible for another attempt.
+            # Reset its previous execution metadata before retrying.
+            if step.status == ProcessingStepStatus.FAILED.value:
+                step.error_message = None
+                step.completed_at = None
 
             self._mark_running(step)
 
             try:
-                processing_step_executor.execute(step.step_name, context)
+                processing_step_executor.execute(
+                    step.step_name,
+                    context,
+                )
 
                 self._mark_completed(step)
 
@@ -59,12 +88,11 @@ class ProcessingPipeline:
                 )
                 raise
 
-    def _mark_running(
-        self,
-        step: ProcessingStep,
-    ) -> None:
+    def _mark_running(self, step: ProcessingStep) -> None:
         step.status = ProcessingStepStatus.RUNNING.value
         step.started_at = datetime.now(UTC)
+        step.completed_at = None
+        step.error_message = None
 
         processing_step_repository.update(
             db=self.db,

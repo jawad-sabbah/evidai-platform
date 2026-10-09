@@ -91,6 +91,37 @@ class EvidenceWorker:
                 processing_job.id,
             )
 
+            # Load existing processing steps
+            existing_steps = self.load_processing_steps(
+                processing_job.id,
+            )
+
+            print(
+                f"Loaded {len(existing_steps)} processing steps "
+                f"for job {processing_job.id}"
+            )
+
+            # detect complete steps
+            completed_steps = self.detect_completed_steps(
+                existing_steps,
+            )
+
+            print(
+                f"Detected {len(completed_steps)} completed steps "
+                f"for job {processing_job.id}"
+            )
+
+            failed_step = self.locate_failed_step(
+                existing_steps,
+            )
+
+            if failed_step is not None:
+                print(
+                    f"Failed processing step detected: "
+                    f"{failed_step.step_name} "
+                    f"for job {processing_job.id}"
+                )
+
             # execute processing pipeline
             pipeline = ProcessingPipeline(
                 db=self.db,
@@ -104,11 +135,12 @@ class EvidenceWorker:
                     job_id=processing_job.id,
                 )
             except Exception:
-                # retry job if maximum attempts have not been reached
                 if processing_job.attempt_count < processing_job.max_attempts:
                     processing_job.status = ProcessingJobStatus.QUEUED.value
+                    processing_job.completed_at = None
                 else:
                     processing_job.status = ProcessingJobStatus.FAILED.value
+                    processing_job.completed_at = datetime.now(UTC)
 
                 processing_job_repository.update(
                     db=self.db,
@@ -150,6 +182,42 @@ class EvidenceWorker:
             self.db.close()
             self.db = None
             print("Evidence worker stopped")
+
+    def load_processing_steps(
+        self,
+        job_id: UUID,
+    ) -> list[ProcessingStep]:
+        if self.db is None:
+            raise RuntimeError("Worker database session is not initialized")
+
+        return processing_step_repository.list_by_job_id(
+            db=self.db,
+            job_id=job_id,
+        )
+
+    def detect_completed_steps(
+        self,
+        steps: list[ProcessingStep],
+    ) -> set[str]:
+        return {
+            step.step_name
+            for step in steps
+            if step.status == ProcessingStepStatus.COMPLETED.value
+        }
+
+    def locate_failed_step(
+        self,
+        steps: list[ProcessingStep],
+    ) -> ProcessingStep | None:
+        steps_by_name = {step.step_name: step for step in steps}
+
+        for step_name in ORDERED_PROCESSING_STEPS:
+            step = steps_by_name.get(step_name.value)
+
+            if step is not None and step.status == ProcessingStepStatus.FAILED.value:
+                return step
+
+        return None
 
     def initialize_processing_steps(self, job_id: UUID) -> None:
         if self.db is None:
