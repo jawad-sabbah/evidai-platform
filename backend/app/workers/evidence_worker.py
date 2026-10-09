@@ -1,10 +1,12 @@
 import argparse
+import logging
 from datetime import UTC, datetime
 from uuid import UUID
 
 from sqlalchemy.orm import Session
 
 from app.core.enums import ProcessingJobStatus, ProcessingStepStatus
+from app.core.logging_config import configure_logging
 from app.db.session import SessionLocal
 from app.models.processing_step import ProcessingStep
 from app.processing.pipeline import ProcessingPipeline
@@ -16,6 +18,10 @@ from app.repositories.processing_step_repository import (
     processing_step_repository,
 )
 
+configure_logging()
+
+logger = logging.getLogger("app.worker")
+
 
 class EvidenceWorker:
     def __init__(self) -> None:
@@ -25,7 +31,10 @@ class EvidenceWorker:
         self,
         job_id: UUID,
     ) -> None:
-        print(f"Evidence worker starting for job {job_id}")
+        logger.info(
+            "Evidence worker starting",
+            extra={"event": "worker_started"},
+        )
 
         self.db = SessionLocal()
 
@@ -37,20 +46,26 @@ class EvidenceWorker:
 
             # Ignore stale messages referencing deleted jobs
             if processing_job is None:
-                print(
-                    f"Processing job {job_id} no longer exists. "
-                    "Skipping stale queue message."
+                logger.warning(
+                    "Processing job no longer exists. Skipping stale queue message.",
+                    extra={"event": "job_not_found"},
                 )
                 return
 
             # Ignore jobs that are already running
             if processing_job.status == ProcessingJobStatus.RUNNING.value:
-                print(f"Processing job {job_id} is already RUNNING. Skipping.")
+                logger.info(
+                    "Processing job is already RUNNING. Skipping.",
+                    extra={"event": "job_already_running"},
+                )
                 return
 
             # Ignore jobs that have already completed
             if processing_job.status == ProcessingJobStatus.COMPLETED.value:
-                print(f"Processing job {job_id} is already COMPLETED. Skipping.")
+                logger.info(
+                    "Processing job is already COMPLETED. Skipping.",
+                    extra={"event": "job_already_completed"},
+                )
                 return
 
             # Ignore jobs that were cancelled or failed
@@ -58,17 +73,19 @@ class EvidenceWorker:
                 ProcessingJobStatus.CANCELLED.value,
                 ProcessingJobStatus.FAILED.value,
             ):
-                print(
-                    f"Processing job {job_id} has status "
-                    f"{processing_job.status}. Skipping stale queue message."
+                logger.info(
+                    "Processing job has status %s. Skipping stale queue message.",
+                    processing_job.status,
+                    extra={"event": "job_terminal_status"},
                 )
                 return
 
             # Only QUEUED jobs are eligible
             if processing_job.status != ProcessingJobStatus.QUEUED.value:
-                print(
-                    f"Processing job {job_id} has unexpected status "
-                    f"{processing_job.status}. Skipping."
+                logger.warning(
+                    "Processing job has unexpected status %s. Skipping.",
+                    processing_job.status,
+                    extra={"event": "job_unexpected_status"},
                 )
                 return
 
@@ -79,14 +96,20 @@ class EvidenceWorker:
             )
 
             if claimed_job is None:
-                print(
-                    f"Processing job {job_id} was claimed by another worker. Skipping."
+                logger.info(
+                    "Processing job was claimed by another worker. Skipping.",
+                    extra={"event": "job_claim_failed"},
                 )
                 return
 
             processing_job = claimed_job
 
-            # start processing steps
+            logger.info(
+                "Processing job claimed successfully",
+                extra={"event": "job_claimed"},
+            )
+
+            # Initialize processing steps
             self.initialize_processing_steps(
                 processing_job.id,
             )
@@ -96,51 +119,76 @@ class EvidenceWorker:
                 processing_job.id,
             )
 
-            print(
-                f"Loaded {len(existing_steps)} processing steps "
-                f"for job {processing_job.id}"
+            logger.info(
+                "Loaded %s processing steps",
+                len(existing_steps),
+                extra={"event": "processing_steps_loaded"},
             )
 
-            # detect complete steps
+            # Detect completed steps
             completed_steps = self.detect_completed_steps(
                 existing_steps,
             )
 
-            print(
-                f"Detected {len(completed_steps)} completed steps "
-                f"for job {processing_job.id}"
+            logger.info(
+                "Detected %s completed processing steps",
+                len(completed_steps),
+                extra={"event": "completed_steps_detected"},
             )
 
+            # Locate previously failed step
             failed_step = self.locate_failed_step(
                 existing_steps,
             )
 
             if failed_step is not None:
-                print(
-                    f"Failed processing step detected: "
-                    f"{failed_step.step_name} "
-                    f"for job {processing_job.id}"
+                logger.info(
+                    "Failed processing step detected: %s",
+                    failed_step.step_name,
+                    extra={"event": "failed_step_detected"},
                 )
 
-            # execute processing pipeline
+            # Execute processing pipeline
             pipeline = ProcessingPipeline(
                 db=self.db,
             )
 
             try:
+                logger.info(
+                    "Processing pipeline starting",
+                    extra={"event": "pipeline_started"},
+                )
+
                 pipeline.execute(
                     job_id=processing_job.id,
                 )
+
                 self.validate_processing_steps_completed(
                     job_id=processing_job.id,
                 )
+
+                logger.info(
+                    "Processing pipeline completed successfully",
+                    extra={"event": "pipeline_completed"},
+                )
+
             except Exception:
                 if processing_job.attempt_count < processing_job.max_attempts:
                     processing_job.status = ProcessingJobStatus.QUEUED.value
                     processing_job.completed_at = None
+
+                    logger.warning(
+                        "Processing job failed and is eligible for retry",
+                        extra={"event": "job_retry_pending"},
+                    )
                 else:
                     processing_job.status = ProcessingJobStatus.FAILED.value
                     processing_job.completed_at = datetime.now(UTC)
+
+                    logger.error(
+                        "Processing job reached maximum retry attempts",
+                        extra={"event": "job_max_attempts_reached"},
+                    )
 
                 processing_job_repository.update(
                     db=self.db,
@@ -150,11 +198,9 @@ class EvidenceWorker:
                 self.db.commit()
                 raise
 
-            # mark processing job as COMPLETED
+            # Mark processing job as COMPLETED
             processing_job.status = ProcessingJobStatus.COMPLETED.value
-            processing_job.completed_at = datetime.now(
-                UTC
-            )  # add time when the job completed
+            processing_job.completed_at = datetime.now(UTC)
 
             processing_job_repository.update(
                 db=self.db,
@@ -163,25 +209,36 @@ class EvidenceWorker:
 
             self.db.commit()
 
-            print(
-                f"Processing job found: "
-                f"id={processing_job.id}, "
-                f"status={processing_job.status}, "
-                f"evidence_id={processing_job.evidence_id}"
+            logger.info(
+                "Processing job completed successfully",
+                extra={"event": "job_completed"},
             )
 
         except KeyboardInterrupt:
             self.db.rollback()
-            print("Evidence worker interrupted")
+
+            logger.warning(
+                "Evidence worker interrupted",
+                extra={"event": "worker_interrupted"},
+            )
 
         except Exception:
             self.db.rollback()
+
+            logger.exception(
+                "Evidence worker failed",
+                extra={"event": "worker_failed"},
+            )
             raise
 
         finally:
             self.db.close()
             self.db = None
-            print("Evidence worker stopped")
+
+            logger.info(
+                "Evidence worker stopped",
+                extra={"event": "worker_stopped"},
+            )
 
     def load_processing_steps(
         self,
@@ -219,7 +276,10 @@ class EvidenceWorker:
 
         return None
 
-    def initialize_processing_steps(self, job_id: UUID) -> None:
+    def initialize_processing_steps(
+        self,
+        job_id: UUID,
+    ) -> None:
         if self.db is None:
             raise RuntimeError("Worker database session is not initialized")
 
@@ -243,7 +303,10 @@ class EvidenceWorker:
 
         self.db.commit()
 
-    def validate_processing_steps_completed(self, job_id: UUID) -> None:
+    def validate_processing_steps_completed(
+        self,
+        job_id: UUID,
+    ) -> None:
         if self.db is None:
             raise RuntimeError("Worker database session is not initialized")
 
