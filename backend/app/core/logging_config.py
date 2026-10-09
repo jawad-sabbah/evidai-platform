@@ -15,6 +15,9 @@ class JsonFormatter(logging.Formatter):
         if hasattr(record, "event"):
             log_data["event"] = record.event
 
+        if hasattr(record, "job_id"):
+            log_data["job_id"] = str(record.job_id)
+
         if record.exc_info:
             log_data["exception"] = self.formatException(record.exc_info)
 
@@ -33,3 +36,12 @@ def configure_logging() -> None:
     logger.addHandler(handler)
     logger.setLevel(logging.INFO)
     logger.propagate = False
+
+
+class JobLoggerAdapter(logging.LoggerAdapter):
+    def process(self, msg, kwargs):
+        kwargs["extra"] = {
+            **kwargs.get("extra", {}),
+            **self.extra,
+        }
+        return msg, kwargs

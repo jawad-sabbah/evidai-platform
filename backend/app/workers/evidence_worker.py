@@ -6,7 +6,7 @@ from uuid import UUID
 from sqlalchemy.orm import Session
 
 from app.core.enums import ProcessingJobStatus, ProcessingStepStatus
-from app.core.logging_config import configure_logging
+from app.core.logging_config import JobLoggerAdapter, configure_logging
 from app.db.session import SessionLocal
 from app.models.processing_step import ProcessingStep
 from app.processing.pipeline import ProcessingPipeline
@@ -31,7 +31,12 @@ class EvidenceWorker:
         self,
         job_id: UUID,
     ) -> None:
-        logger.info(
+        job_logger = JobLoggerAdapter(
+            logger,
+            {"job_id": str(job_id)},
+        )
+
+        job_logger.info(
             "Evidence worker starting",
             extra={"event": "worker_started"},
         )
@@ -46,7 +51,7 @@ class EvidenceWorker:
 
             # Ignore stale messages referencing deleted jobs
             if processing_job is None:
-                logger.warning(
+                job_logger.warning(
                     "Processing job no longer exists. Skipping stale queue message.",
                     extra={"event": "job_not_found"},
                 )
@@ -54,7 +59,7 @@ class EvidenceWorker:
 
             # Ignore jobs that are already running
             if processing_job.status == ProcessingJobStatus.RUNNING.value:
-                logger.info(
+                job_logger.info(
                     "Processing job is already RUNNING. Skipping.",
                     extra={"event": "job_already_running"},
                 )
@@ -62,7 +67,7 @@ class EvidenceWorker:
 
             # Ignore jobs that have already completed
             if processing_job.status == ProcessingJobStatus.COMPLETED.value:
-                logger.info(
+                job_logger.info(
                     "Processing job is already COMPLETED. Skipping.",
                     extra={"event": "job_already_completed"},
                 )
@@ -73,7 +78,7 @@ class EvidenceWorker:
                 ProcessingJobStatus.CANCELLED.value,
                 ProcessingJobStatus.FAILED.value,
             ):
-                logger.info(
+                job_logger.info(
                     "Processing job has status %s. Skipping stale queue message.",
                     processing_job.status,
                     extra={"event": "job_terminal_status"},
@@ -82,7 +87,7 @@ class EvidenceWorker:
 
             # Only QUEUED jobs are eligible
             if processing_job.status != ProcessingJobStatus.QUEUED.value:
-                logger.warning(
+                job_logger.warning(
                     "Processing job has unexpected status %s. Skipping.",
                     processing_job.status,
                     extra={"event": "job_unexpected_status"},
@@ -96,7 +101,7 @@ class EvidenceWorker:
             )
 
             if claimed_job is None:
-                logger.info(
+                job_logger.info(
                     "Processing job was claimed by another worker. Skipping.",
                     extra={"event": "job_claim_failed"},
                 )
@@ -104,7 +109,7 @@ class EvidenceWorker:
 
             processing_job = claimed_job
 
-            logger.info(
+            job_logger.info(
                 "Processing job claimed successfully",
                 extra={"event": "job_claimed"},
             )
@@ -119,7 +124,7 @@ class EvidenceWorker:
                 processing_job.id,
             )
 
-            logger.info(
+            job_logger.info(
                 "Loaded %s processing steps",
                 len(existing_steps),
                 extra={"event": "processing_steps_loaded"},
@@ -130,7 +135,7 @@ class EvidenceWorker:
                 existing_steps,
             )
 
-            logger.info(
+            job_logger.info(
                 "Detected %s completed processing steps",
                 len(completed_steps),
                 extra={"event": "completed_steps_detected"},
@@ -142,7 +147,7 @@ class EvidenceWorker:
             )
 
             if failed_step is not None:
-                logger.info(
+                job_logger.info(
                     "Failed processing step detected: %s",
                     failed_step.step_name,
                     extra={"event": "failed_step_detected"},
@@ -154,7 +159,7 @@ class EvidenceWorker:
             )
 
             try:
-                logger.info(
+                job_logger.info(
                     "Processing pipeline starting",
                     extra={"event": "pipeline_started"},
                 )
@@ -167,7 +172,7 @@ class EvidenceWorker:
                     job_id=processing_job.id,
                 )
 
-                logger.info(
+                job_logger.info(
                     "Processing pipeline completed successfully",
                     extra={"event": "pipeline_completed"},
                 )
@@ -177,7 +182,7 @@ class EvidenceWorker:
                     processing_job.status = ProcessingJobStatus.QUEUED.value
                     processing_job.completed_at = None
 
-                    logger.warning(
+                    job_logger.warning(
                         "Processing job failed and is eligible for retry",
                         extra={"event": "job_retry_pending"},
                     )
@@ -185,7 +190,7 @@ class EvidenceWorker:
                     processing_job.status = ProcessingJobStatus.FAILED.value
                     processing_job.completed_at = datetime.now(UTC)
 
-                    logger.error(
+                    job_logger.error(
                         "Processing job reached maximum retry attempts",
                         extra={"event": "job_max_attempts_reached"},
                     )
@@ -209,7 +214,7 @@ class EvidenceWorker:
 
             self.db.commit()
 
-            logger.info(
+            job_logger.info(
                 "Processing job completed successfully",
                 extra={"event": "job_completed"},
             )
@@ -217,7 +222,7 @@ class EvidenceWorker:
         except KeyboardInterrupt:
             self.db.rollback()
 
-            logger.warning(
+            job_logger.warning(
                 "Evidence worker interrupted",
                 extra={"event": "worker_interrupted"},
             )
@@ -225,7 +230,7 @@ class EvidenceWorker:
         except Exception:
             self.db.rollback()
 
-            logger.exception(
+            job_logger.exception(
                 "Evidence worker failed",
                 extra={"event": "worker_failed"},
             )
@@ -235,7 +240,7 @@ class EvidenceWorker:
             self.db.close()
             self.db = None
 
-            logger.info(
+            job_logger.info(
                 "Evidence worker stopped",
                 extra={"event": "worker_stopped"},
             )
