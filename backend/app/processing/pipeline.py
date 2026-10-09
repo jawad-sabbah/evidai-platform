@@ -21,8 +21,9 @@ class ProcessingPipeline:
         self.db = db
 
     def execute(self, job_id: UUID) -> None:
-        # intialize the context
+        # Initialize the context
         context = ProcessingContext(job_id=job_id)
+
         steps = processing_step_repository.list_by_job_id(
             db=self.db,
             job_id=job_id,
@@ -41,14 +42,20 @@ class ProcessingPipeline:
                     f"is missing for job {job_id}"
                 )
 
-            # Skip steps explicitly marked as SKIPPED
-            if step.status == ProcessingStepStatus.SKIPPED.value:
+            # Skip already completed or explicitly skipped steps
+            if step.status in (
+                ProcessingStepStatus.COMPLETED.value,
+                ProcessingStepStatus.SKIPPED.value,
+            ):
                 continue
 
             self._mark_running(step)
 
             try:
-                processing_step_executor.execute(step.step_name, context)
+                processing_step_executor.execute(
+                    step.step_name,
+                    context,
+                )
 
                 self._mark_completed(step)
 
