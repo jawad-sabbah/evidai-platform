@@ -49,6 +49,12 @@ class ProcessingPipeline:
             ):
                 continue
 
+            # A failed step is eligible for another attempt.
+            # Reset its previous execution metadata before retrying.
+            if step.status == ProcessingStepStatus.FAILED.value:
+                step.error_message = None
+                step.completed_at = None
+
             self._mark_running(step)
 
             try:
