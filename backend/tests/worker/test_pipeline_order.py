@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock, call
+from unittest.mock import ANY, MagicMock, call
 from uuid import uuid4
 
 from app.processing.pipeline import ProcessingPipeline
@@ -33,7 +33,7 @@ def test_pipeline_executes_steps_in_correct_order(monkeypatch):
     pipeline.execute(job_id=job_id)
 
     assert executor.execute.call_args_list == [
-        call(step_name.value) for step_name in ORDERED_PROCESSING_STEPS
+        call(step_name.value, ANY) for step_name in ORDERED_PROCESSING_STEPS
     ]
 
 

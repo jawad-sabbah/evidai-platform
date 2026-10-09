@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.core.enums import ProcessingStepStatus
 from app.models.processing_step import ProcessingStep
+from app.processing.context import ProcessingContext
 from app.processing.step_definitions import ORDERED_PROCESSING_STEPS
 from app.processing.step_executor import processing_step_executor
 from app.repositories.processing_step_repository import (
@@ -20,6 +21,8 @@ class ProcessingPipeline:
         self.db = db
 
     def execute(self, job_id: UUID) -> None:
+        # intialize the context
+        context = ProcessingContext(job_id=job_id)
         steps = processing_step_repository.list_by_job_id(
             db=self.db,
             job_id=job_id,
@@ -41,9 +44,7 @@ class ProcessingPipeline:
             self._mark_running(step)
 
             try:
-                processing_step_executor.execute(
-                    step.step_name,
-                )
+                processing_step_executor.execute(step.step_name, context)
 
                 self._mark_completed(step)
 
