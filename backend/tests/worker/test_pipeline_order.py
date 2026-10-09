@@ -5,6 +5,7 @@ from app.processing.pipeline import ProcessingPipeline
 from app.processing.step_definitions import ORDERED_PROCESSING_STEPS
 from app.core.enums import ProcessingStepStatus
 
+
 def test_pipeline_executes_steps_in_correct_order(monkeypatch):
     db = MagicMock()
     job_id = uuid4()
