@@ -111,6 +111,17 @@ class EvidenceWorker:
                 f"for job {processing_job.id}"
             )
 
+            failed_step = self.locate_failed_step(
+                existing_steps,
+            )
+
+            if failed_step is not None:
+                print(
+                    f"Failed processing step detected: "
+                    f"{failed_step.step_name} "
+                    f"for job {processing_job.id}"
+                )
+
             # execute processing pipeline
             pipeline = ProcessingPipeline(
                 db=self.db,
@@ -192,6 +203,20 @@ class EvidenceWorker:
             for step in steps
             if step.status == ProcessingStepStatus.COMPLETED.value
         }
+
+    def locate_failed_step(
+        self,
+        steps: list[ProcessingStep],
+    ) -> ProcessingStep | None:
+        steps_by_name = {step.step_name: step for step in steps}
+
+        for step_name in ORDERED_PROCESSING_STEPS:
+            step = steps_by_name.get(step_name.value)
+
+            if step is not None and step.status == ProcessingStepStatus.FAILED.value:
+                return step
+
+        return None
 
     def initialize_processing_steps(self, job_id: UUID) -> None:
         if self.db is None:
