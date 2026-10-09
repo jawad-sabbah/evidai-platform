@@ -91,6 +91,16 @@ class EvidenceWorker:
                 processing_job.id,
             )
 
+            # Load existing processing steps
+            existing_steps = self.load_processing_steps(
+                processing_job.id,
+            )
+
+            print(
+                f"Loaded {len(existing_steps)} processing steps "
+                f"for job {processing_job.id}"
+            )
+
             # execute processing pipeline
             pipeline = ProcessingPipeline(
                 db=self.db,
@@ -150,6 +160,18 @@ class EvidenceWorker:
             self.db.close()
             self.db = None
             print("Evidence worker stopped")
+
+    def load_processing_steps(
+        self,
+        job_id: UUID,
+    ) -> list[ProcessingStep]:
+        if self.db is None:
+            raise RuntimeError("Worker database session is not initialized")
+
+        return processing_step_repository.list_by_job_id(
+            db=self.db,
+            job_id=job_id,
+        )
 
     def initialize_processing_steps(self, job_id: UUID) -> None:
         if self.db is None:
