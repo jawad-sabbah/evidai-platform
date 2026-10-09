@@ -3,7 +3,7 @@ from uuid import uuid4
 
 from app.processing.pipeline import ProcessingPipeline
 from app.processing.step_definitions import ORDERED_PROCESSING_STEPS
-
+from app.core.enums import ProcessingStepStatus
 
 def test_pipeline_executes_steps_in_correct_order(monkeypatch):
     db = MagicMock()
@@ -11,7 +11,10 @@ def test_pipeline_executes_steps_in_correct_order(monkeypatch):
 
     # Deliberately return steps in reverse order
     steps = [
-        MagicMock(step_name=step_name.value)
+        MagicMock(
+            step_name=step_name.value,
+            status=ProcessingStepStatus.PENDING.value,
+        )
         for step_name in reversed(ORDERED_PROCESSING_STEPS)
     ]
 

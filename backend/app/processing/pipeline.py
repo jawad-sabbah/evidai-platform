@@ -20,6 +20,25 @@ class ProcessingPipeline:
     ) -> None:
         self.db = db
 
+    @staticmethod
+    def should_execute_step(step: ProcessingStep) -> bool:
+        if step.status in (
+            ProcessingStepStatus.COMPLETED.value,
+            ProcessingStepStatus.SKIPPED.value,
+        ):
+            return False
+
+        if step.status in (
+            ProcessingStepStatus.PENDING.value,
+            ProcessingStepStatus.FAILED.value,
+        ):
+            return True
+
+        raise RuntimeError(
+            f"Processing step {step.step_name} cannot be executed "
+            f"from status {step.status}"
+        )
+
     def execute(self, job_id: UUID) -> None:
         # Initialize the context
         context = ProcessingContext(job_id=job_id)
@@ -43,10 +62,7 @@ class ProcessingPipeline:
                 )
 
             # Skip already completed or explicitly skipped steps
-            if step.status in (
-                ProcessingStepStatus.COMPLETED.value,
-                ProcessingStepStatus.SKIPPED.value,
-            ):
+            if not self.should_execute_step(step):
                 continue
 
             # A failed step is eligible for another attempt.
