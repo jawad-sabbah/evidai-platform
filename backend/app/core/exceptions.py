@@ -88,3 +88,11 @@ class EvidenceFileNotFoundError(EvidenceFileLoadingError):
 
 class InvalidEvidenceStoragePathError(EvidenceFileLoadingError):
     """Raised when an evidence storage path is outside its permitted directory."""
+
+
+class UnsupportedEvidenceFileTypeError(InvalidEvidenceFileError):
+    """Raised when an evidence file format is not supported."""
+
+
+class EvidenceFileTypeMismatchError(InvalidEvidenceFileError):
+    """Raised when the declared file type does not match its contents."""
