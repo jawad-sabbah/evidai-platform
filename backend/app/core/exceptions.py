@@ -140,3 +140,11 @@ class DocxExtractionError(Exception):
 
 class DocxExtractionLimitError(DocxExtractionError):
     """Raised when Word content exceeds extraction safety limits."""
+
+
+class TextExtractionError(Exception):
+    """Raised when text or structured content extraction fails."""
+
+
+class TextExtractionLimitError(TextExtractionError):
+    """Raised when text evidence exceeds extraction resource limits."""
