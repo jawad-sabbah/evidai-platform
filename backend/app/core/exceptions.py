@@ -132,3 +132,11 @@ class EncryptedEvidencePdfError(PdfExtractionError):
 
 class PdfExtractionLimitError(PdfExtractionError):
     """Raised when a PDF exceeds configured extraction limits."""
+
+
+class DocxExtractionError(Exception):
+    """Raised when Word document content extraction fails."""
+
+
+class DocxExtractionLimitError(DocxExtractionError):
+    """Raised when Word content exceeds extraction safety limits."""
