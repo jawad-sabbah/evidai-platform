@@ -8,8 +8,10 @@ from sqlalchemy.orm import Session
 
 from app.core.enums import EvidenceProcessingStatus
 from app.core.exceptions import (
+    EvidenceFileSizeError,
     EvidenceNotFoundError,
     EvidenceProcessingError,
+    EvidenceStorageConflictError,
     EvidenceUploadError,
 )
 from app.models.evidence import Evidence
@@ -42,6 +44,8 @@ class EvidenceService:
                 case_id=case_id,
                 evidence_id=evidence_id,
             )
+        except (EvidenceFileSizeError, EvidenceStorageConflictError):
+            raise
         except OSError as exc:
             raise EvidenceUploadError("Failed to store evidence file") from exc
 

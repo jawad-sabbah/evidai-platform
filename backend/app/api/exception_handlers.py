@@ -11,6 +11,7 @@ from app.core.exceptions import (
     EmailAlreadyExistsError,
     EvidenceNotFoundError,
     EvidenceProcessingError,
+    EvidenceStorageConflictError,
     EvidenceUploadError,
     ForbiddenError,
     InvalidCaseTransitionError,
@@ -202,6 +203,16 @@ def register_exception_handlers(app: FastAPI) -> None:
     async def evidence_processing_error_handler(
         request: Request,
         exc: EvidenceProcessingError,
+    ) -> JSONResponse:
+        return JSONResponse(
+            status_code=status.HTTP_409_CONFLICT,
+            content={"detail": str(exc)},
+        )
+
+    @app.exception_handler(EvidenceStorageConflictError)
+    async def evidence_storage_conflict_handler(
+        request: Request,
+        exc: EvidenceStorageConflictError,
     ) -> JSONResponse:
         return JSONResponse(
             status_code=status.HTTP_409_CONFLICT,
