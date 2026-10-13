@@ -116,3 +116,7 @@ class UnsafeEvidenceArchiveError(InvalidEvidenceFileError):
 
 class MalformedEvidenceFileError(InvalidEvidenceFileError):
     """Raised when evidence content has an invalid document structure."""
+
+
+class UnsupportedEvidenceExtractorError(Exception):
+    """Raised when no extractor is registered for an evidence format."""
