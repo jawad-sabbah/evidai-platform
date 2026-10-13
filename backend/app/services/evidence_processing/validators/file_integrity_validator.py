@@ -11,6 +11,8 @@ from app.core.exceptions import (
 from app.services.evidence_processing.dto.file_descriptor import (
     EvidenceFileDescriptor,
 )
+from app.core.config import settings
+
 
 CHUNK_SIZE = 1024 * 1024
 SHA256_PATTERN = re.compile(r"[0-9a-fA-F]{64}")
@@ -97,3 +99,8 @@ class EvidenceFileIntegrityValidator:
             file_size=actual_size,
             checksum=actual_checksum,
         )
+
+
+evidence_file_integrity_validator = EvidenceFileIntegrityValidator(
+    max_size_bytes=settings.max_evidence_file_size_bytes,
+)
