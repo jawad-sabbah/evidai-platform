@@ -96,3 +96,11 @@ class UnsupportedEvidenceFileTypeError(InvalidEvidenceFileError):
 
 class EvidenceFileTypeMismatchError(InvalidEvidenceFileError):
     """Raised when the declared file type does not match its contents."""
+
+
+class EvidenceFileSizeError(InvalidEvidenceFileError):
+    """Raised when an evidence file violates file size requirements."""
+
+
+class EvidenceFileIntegrityError(InvalidEvidenceFileError):
+    """Raised when evidence content does not match its stored metadata."""
