@@ -3,6 +3,7 @@ import hmac
 import re
 from dataclasses import dataclass
 
+from app.core.config import settings
 from app.core.exceptions import (
     EvidenceFileIntegrityError,
     EvidenceFileNotFoundError,
@@ -11,8 +12,6 @@ from app.core.exceptions import (
 from app.services.evidence_processing.dto.file_descriptor import (
     EvidenceFileDescriptor,
 )
-from app.core.config import settings
-
 
 CHUNK_SIZE = 1024 * 1024
 SHA256_PATTERN = re.compile(r"[0-9a-fA-F]{64}")

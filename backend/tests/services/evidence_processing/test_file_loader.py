@@ -231,12 +231,10 @@ def test_reject_evidence_from_different_case(
     """The evidence lookup must remain scoped to the processing job's case."""
 
     different_case_id = uuid4()
-    original_lookup = loader_module.evidence_repository.get_by_id_and_case_id
 
     def get_evidence(db, evidence_id, case_id):
         assert case_id == evidence_setup.job.case_id
         assert evidence_id == evidence_setup.job.evidence_id
-        return None
 
     monkeypatch.setattr(
         loader_module.evidence_repository,
