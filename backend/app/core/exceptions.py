@@ -108,3 +108,11 @@ class EvidenceFileIntegrityError(InvalidEvidenceFileError):
 
 class EvidenceStorageConflictError(Exception):
     """Raised when an evidence file already exists at its destination."""
+
+
+class UnsafeEvidenceArchiveError(InvalidEvidenceFileError):
+    """Raised when an evidence archive violates security limits."""
+
+
+class MalformedEvidenceFileError(InvalidEvidenceFileError):
+    """Raised when evidence content has an invalid document structure."""

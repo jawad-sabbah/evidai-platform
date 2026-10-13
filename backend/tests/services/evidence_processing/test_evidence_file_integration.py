@@ -12,6 +12,7 @@ from app.core.exceptions import (
     EvidenceFileSizeError,
     EvidenceFileTypeMismatchError,
     InvalidEvidenceStoragePathError,
+    MalformedEvidenceFileError,
     UnsupportedEvidenceFileTypeError,
 )
 from app.services.evidence_processing import file_loader as loader_module
@@ -127,7 +128,6 @@ def validation_environment(tmp_path, monkeypatch):
             json.dumps({"case": "EV-194"}).encode(),
         ),
         ("evidence.xml", b"<evidence><id>1</id></evidence>"),
-        ("report.pdf", b"%PDF-1.7\nExample"),
     ],
 )
 def test_supported_file_validation(
@@ -221,12 +221,12 @@ def test_file_type_mismatch_rejected(validation_environment):
 
 
 def test_corrupted_json_rejected(validation_environment):
-    """Malformed structured documents must be rejected."""
+    """Malformed JSON documents must be rejected."""
 
     env = validation_environment
     env.create_evidence("broken.json", b'{"invalid":}')
 
-    with pytest.raises(EvidenceFileTypeMismatchError):
+    with pytest.raises(MalformedEvidenceFileError):
         env.service.validate(db=None, job_id=env.job_id)
 
 

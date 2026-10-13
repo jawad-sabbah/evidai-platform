@@ -7,6 +7,7 @@ import pytest
 
 from app.core.exceptions import (
     EvidenceFileTypeMismatchError,
+    MalformedEvidenceFileError,
     UnsupportedEvidenceFileTypeError,
 )
 from app.services.evidence_processing.dto.file_descriptor import (
@@ -35,11 +36,12 @@ def make_descriptor(path: Path, file_type: str) -> EvidenceFileDescriptor:
     )
 
 
-def test_valid_pdf(tmp_path, validator):
+def test_reject_incomplete_pdf(tmp_path, validator):
     path = tmp_path / "report.pdf"
     path.write_bytes(b"%PDF-1.7\nexample")
 
-    assert validator.validate(make_descriptor(path, "pdf")) == "pdf"
+    with pytest.raises(MalformedEvidenceFileError):
+        validator.validate(make_descriptor(path, "pdf"))
 
 
 @pytest.mark.parametrize(
@@ -111,7 +113,7 @@ def test_invalid_json(tmp_path, validator):
     path = tmp_path / "broken.json"
     path.write_bytes(b'{"invalid":}')
 
-    with pytest.raises(EvidenceFileTypeMismatchError):
+    with pytest.raises(MalformedEvidenceFileError):
         validator.validate(make_descriptor(path, "json"))
 
 
