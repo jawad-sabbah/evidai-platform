@@ -148,3 +148,11 @@ class TextExtractionError(Exception):
 
 class TextExtractionLimitError(TextExtractionError):
     """Raised when text evidence exceeds extraction resource limits."""
+
+
+class SpreadsheetExtractionError(Exception):
+    """Raised when spreadsheet evidence cannot be extracted."""
+
+
+class SpreadsheetExtractionLimitError(SpreadsheetExtractionError):
+    """Raised when spreadsheet processing limits are exceeded."""
