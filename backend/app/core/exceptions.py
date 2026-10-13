@@ -120,3 +120,15 @@ class MalformedEvidenceFileError(InvalidEvidenceFileError):
 
 class UnsupportedEvidenceExtractorError(Exception):
     """Raised when no extractor is registered for an evidence format."""
+
+
+class PdfExtractionError(Exception):
+    """Raised when PDF content extraction fails."""
+
+
+class EncryptedEvidencePdfError(PdfExtractionError):
+    """Raised when PDF extraction requires decryption."""
+
+
+class PdfExtractionLimitError(PdfExtractionError):
+    """Raised when a PDF exceeds configured extraction limits."""
