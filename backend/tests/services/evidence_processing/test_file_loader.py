@@ -1,4 +1,3 @@
-
 from pathlib import Path
 from types import SimpleNamespace
 from uuid import uuid4
@@ -189,9 +188,7 @@ def test_reject_missing_path_outside_case(evidence_setup, tmp_path):
 def test_reject_directory_instead_of_file(evidence_setup):
     """A directory cannot be loaded as an evidence file."""
 
-    evidence_setup.evidence.storage_key = str(
-        evidence_setup.file_path.parent
-    )
+    evidence_setup.evidence.storage_key = str(evidence_setup.file_path.parent)
 
     with pytest.raises(EvidenceFileNotFoundError):
         evidence_setup.loader.load(
@@ -234,9 +231,7 @@ def test_reject_evidence_from_different_case(
     """The evidence lookup must remain scoped to the processing job's case."""
 
     different_case_id = uuid4()
-    original_lookup = (
-        loader_module.evidence_repository.get_by_id_and_case_id
-    )
+    original_lookup = loader_module.evidence_repository.get_by_id_and_case_id
 
     def get_evidence(db, evidence_id, case_id):
         assert case_id == evidence_setup.job.case_id
