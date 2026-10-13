@@ -31,5 +31,13 @@ class Settings:
 
     redis_url: str = "redis://localhost:6379/0"
 
+    # Maximum allowed evidence file size: 100 MB
+    max_evidence_file_size_bytes: int = int(
+        os.getenv(
+            "MAX_EVIDENCE_FILE_SIZE_BYTES",
+            str(100 * 1024 * 1024),
+        )
+    )
+
 
 settings = Settings()
