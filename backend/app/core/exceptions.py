@@ -164,3 +164,11 @@ class EvidenceOcrError(Exception):
 
 class EvidenceOcrLimitError(EvidenceOcrError):
     """Raised when OCR resource limits are exceeded."""
+
+
+class MessageExtractionError(Exception):
+    """Raised when email or chat evidence cannot be extracted."""
+
+
+class MessageExtractionLimitError(MessageExtractionError):
+    """Raised when message evidence exceeds extraction limits."""
