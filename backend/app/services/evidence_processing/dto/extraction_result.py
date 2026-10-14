@@ -2,6 +2,10 @@ from dataclasses import dataclass, field
 from typing import Any
 from uuid import UUID
 
+from app.services.evidence_processing.dto.extraction_provenance import (
+    ExtractionProvenance,
+)
+
 
 @dataclass(frozen=True)
 class SourceReference:
@@ -14,6 +18,9 @@ class SourceReference:
     message_id: str | None = None
     start_time_seconds: float | None = None
     end_time_seconds: float | None = None
+
+    # Position in the extraction result, not the original document.
+    block_number: int | None = None
 
 
 @dataclass(frozen=True)
@@ -28,7 +35,7 @@ class ExtractedContentBlock:
 
 @dataclass(frozen=True)
 class ExtractionResult:
-    """Standard result returned by every evidence extractor."""
+    """Complete structured output produced by an evidence extractor."""
 
     evidence_id: UUID
     case_id: UUID
@@ -36,3 +43,4 @@ class ExtractionResult:
     extractor_name: str
     blocks: tuple[ExtractedContentBlock, ...]
     metadata: dict[str, Any] = field(default_factory=dict)
+    provenance: ExtractionProvenance | None = None

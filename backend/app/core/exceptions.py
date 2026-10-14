@@ -180,3 +180,7 @@ class AudioExtractionError(Exception):
 
 class AudioExtractionLimitError(AudioExtractionError):
     """Raised when audio evidence exceeds processing limits."""
+
+
+class ExtractionMetadataError(Exception):
+    """Raised when extraction identity or provenance is inconsistent."""
