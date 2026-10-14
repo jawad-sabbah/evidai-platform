@@ -156,3 +156,11 @@ class SpreadsheetExtractionError(Exception):
 
 class SpreadsheetExtractionLimitError(SpreadsheetExtractionError):
     """Raised when spreadsheet processing limits are exceeded."""
+
+
+class EvidenceOcrError(Exception):
+    """Raised when evidence OCR cannot complete."""
+
+
+class EvidenceOcrLimitError(EvidenceOcrError):
+    """Raised when OCR resource limits are exceeded."""
