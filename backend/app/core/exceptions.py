@@ -172,3 +172,11 @@ class MessageExtractionError(Exception):
 
 class MessageExtractionLimitError(MessageExtractionError):
     """Raised when message evidence exceeds extraction limits."""
+
+
+class AudioExtractionError(Exception):
+    """Raised when audio evidence extraction fails."""
+
+
+class AudioExtractionLimitError(AudioExtractionError):
+    """Raised when audio evidence exceeds processing limits."""
