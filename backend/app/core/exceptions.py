@@ -116,3 +116,71 @@ class UnsafeEvidenceArchiveError(InvalidEvidenceFileError):
 
 class MalformedEvidenceFileError(InvalidEvidenceFileError):
     """Raised when evidence content has an invalid document structure."""
+
+
+class UnsupportedEvidenceExtractorError(Exception):
+    """Raised when no extractor is registered for an evidence format."""
+
+
+class PdfExtractionError(Exception):
+    """Raised when PDF content extraction fails."""
+
+
+class EncryptedEvidencePdfError(PdfExtractionError):
+    """Raised when PDF extraction requires decryption."""
+
+
+class PdfExtractionLimitError(PdfExtractionError):
+    """Raised when a PDF exceeds configured extraction limits."""
+
+
+class DocxExtractionError(Exception):
+    """Raised when Word document content extraction fails."""
+
+
+class DocxExtractionLimitError(DocxExtractionError):
+    """Raised when Word content exceeds extraction safety limits."""
+
+
+class TextExtractionError(Exception):
+    """Raised when text or structured content extraction fails."""
+
+
+class TextExtractionLimitError(TextExtractionError):
+    """Raised when text evidence exceeds extraction resource limits."""
+
+
+class SpreadsheetExtractionError(Exception):
+    """Raised when spreadsheet evidence cannot be extracted."""
+
+
+class SpreadsheetExtractionLimitError(SpreadsheetExtractionError):
+    """Raised when spreadsheet processing limits are exceeded."""
+
+
+class EvidenceOcrError(Exception):
+    """Raised when evidence OCR cannot complete."""
+
+
+class EvidenceOcrLimitError(EvidenceOcrError):
+    """Raised when OCR resource limits are exceeded."""
+
+
+class MessageExtractionError(Exception):
+    """Raised when email or chat evidence cannot be extracted."""
+
+
+class MessageExtractionLimitError(MessageExtractionError):
+    """Raised when message evidence exceeds extraction limits."""
+
+
+class AudioExtractionError(Exception):
+    """Raised when audio evidence extraction fails."""
+
+
+class AudioExtractionLimitError(AudioExtractionError):
+    """Raised when audio evidence exceeds processing limits."""
+
+
+class ExtractionMetadataError(Exception):
+    """Raised when extraction identity or provenance is inconsistent."""
